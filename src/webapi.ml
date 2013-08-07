@@ -17,8 +17,7 @@ let token =
   s ^ "vpsH1H"
 
 let auth_string = "auth=" ^ token
-let get_path request = "GET /" ^ request ^ "?" ^ auth_string
-let post_path request = "POST /" ^ request
+let get_path post_get request = post_get ^ request ^ "?" ^ auth_string
 
 let make_addr host_name port =
   let host_addr =
@@ -48,19 +47,16 @@ let connect request f =
     let in_ch = in_channel_of_descr sock in
     let out_ch = out_channel_of_descr sock in
 (*     let out_ch = open_out "toto" in *)
-    output_string out_ch (post_path request ^ " HTTP/1.1\r\n");
+    output_string out_ch (get_path "POST /" request ^ " HTTP/1.1\r\n");
     output_string out_ch ("Host: "^host_name^"\r\n");
     output_string out_ch "User-Agent: dummy\r\n";
     output_string out_ch "Connection: close\r\n";
-    output_string out_ch "Authorization: ";
-    output_string out_ch token;
-    output_string out_ch "\r\n";
     let b = Buffer.create 257 in
     f b;
     if Buffer.length b > 0 then begin
       output_string out_ch "Content-Type: application/json\r\n";
       output_string out_ch "Content-Length: ";
-      output_string out_ch (string_of_int (Buffer.length b));
+      output_string out_ch (string_of_int (Buffer.length b + 4));
       output_string out_ch "\r\n";
       output_string out_ch "\r\n";
       let code = encode_buffer b in
