@@ -35,25 +35,30 @@ let test_generator () =
 
 (*
 let _ =
-  Webapi.train 5
+  Webapi.train 10
 *)
 
+let x = ref 0
+
 let rec find_program input output gen =
+  incr x;
   let p = gen () in
   if Programs.validates_constraints input output p then p
   else find_program input output gen
 
 let _ =
-  let p = Programs.program_of_file "training_programs/exp5.p" in
+  let p = Programs.program_of_file "training_programs/exp6.p" in
   let p = Programs.scoping p in
   let input = Arguments.int_64_arguments in
   let out = Array.map (Programs.eval p) input in
-  let unops = [|Ast.Shr16|] in
-  let binops = [|Ast.Xor|] in
-  let size = 5 in
+  let unops = [|Ast.Shl1; Ast.Shr4|] in
+  let binops = [|Ast.Or|] in
+  let fold = Program_generator.Top_fold in
+  let size = 10 in
   let gen =
-    Program_generator.make unops binops Program_generator.No_Fold size in
+    Program_generator.make unops binops fold size in
   let p = find_program input out gen in
-  Format.printf "%a" Programs.print_program p
+  Format.printf "%a@." Programs.print_program p;
+  Format.printf "%d@." !x
 
 
