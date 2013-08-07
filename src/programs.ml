@@ -43,6 +43,8 @@ let apply_binop op r1 r2 =
   | Xor -> Int64.logxor r1 r2
   | Plus -> Int64.add r1 r2
 
+let int64_255 = Int64.of_int 255
+
 let naive_eval_expr =
   let rec eval map e =
     match e with
@@ -64,7 +66,7 @@ let naive_eval_expr =
         for i = 1 to 8 do
           let map = IdMap.add y !acc map in
           let input =
-            Int64.logand (Int64.of_int 255) (Int64.shift_right v ((i-1)*8)) in
+            Int64.logand int64_255 (Int64.shift_right v ((i-1)*8)) in
           let map = IdMap.add x input map in
           acc := eval map e2
         done;
@@ -110,6 +112,15 @@ let eval p input =
   p.input.value <- input;
   eval_expr p.expr
 
+let validates_constraints input output p =
+  let l = Array.length input in
+  assert (l = Array.length output);
+  try
+    for i = 0 to l - 1 do
+      if eval p input.(i) <> output.(i) then raise Exit
+    done;
+    true
+  with Exit -> false
 
 let rec expr_size e =
   match e with
