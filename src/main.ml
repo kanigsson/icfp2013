@@ -32,9 +32,7 @@ let test_generator () =
   ()
 
 let _ =
-  print_endline "hello";
-  (* let x = Webapi.my_problems () in *)
-  (* x *)
-
   Random.self_init ();
   test_generator ()
+
+module P = Arguments

@@ -99,7 +99,7 @@ let eval_expr =
         y.value <- acc;
         for i = 1 to 8 do
           let input =
-            Int64.logand (Int64.of_int 255) (Int64.shift_right v ((i-1)*8))
+            Int64.logand int64_255 (Int64.shift_right v ((i-1)*8))
           in
           x.value <- input;
           y.value <- eval e2

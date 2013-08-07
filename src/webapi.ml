@@ -46,7 +46,6 @@ let connect request f =
   run_client (fun sock ->
     let in_ch = in_channel_of_descr sock in
     let out_ch = out_channel_of_descr sock in
-(*     let out_ch = open_out "toto" in *)
     output_string out_ch (get_path "POST /" request ^ " HTTP/1.1\r\n");
     output_string out_ch ("Host: "^host_name^"\r\n");
     output_string out_ch "User-Agent: dummy\r\n";
