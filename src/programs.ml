@@ -75,3 +75,64 @@ let rec expr_size e =
   | Fold (e0,e1,_,_,e2) -> 2 + expr_size e2 + expr_size e2 + expr_size e0
 
 let size p = 1 + expr_size p.expr
+
+let single_hex_num c =
+  match Int64.to_int c with
+  | 0 ->  '0'
+  | 1 ->  '1'
+  | 2 ->  '2'
+  | 3 ->  '3'
+  | 4 ->  '4'
+  | 5 ->  '5'
+  | 6 ->  '6'
+  | 7 ->  '7'
+  | 8 ->  '8'
+  | 9 ->  '9'
+  | 10 -> 'A'
+  | 11 -> 'B'
+  | 12 -> 'C'
+  | 13 -> 'D'
+  | 14 -> 'E'
+  | 15 -> 'F'
+  | _ -> assert false
+ 
+let int64_to_hex_string x =
+  let s = String.copy "0x0000000000000000" in
+  for i = 1 to 16 do
+    s.[i+1] <-
+      single_hex_num (Int64.shift_right x (4*(16-i)))
+  done;
+  s
+
+let print_unop fmt op =
+  match op with
+  | Not -> Format.fprintf fmt "not"
+  | Shl1 -> Format.fprintf fmt "shl1"
+  | Shr1 -> Format.fprintf fmt "shr1"
+  | Shr4 -> Format.fprintf fmt "shr4"
+  | Shr16 -> Format.fprintf fmt "shr16"
+
+let print_binop fmt op =
+  match op with
+  | And -> Format.fprintf fmt "and"
+  | Or -> Format.fprintf fmt "or"
+  | Xor -> Format.fprintf fmt "xor"
+  | Plus -> Format.fprintf fmt "plus"
+
+let print_var fmt x = assert false
+
+let rec print_expr fmt e =
+  match e with
+  | Const c -> Format.fprintf fmt "%s" (int64_to_hex_string c)
+  | Var x -> print_var fmt x
+  | If_Zero (e1, e2, e3) ->
+      Format.fprintf fmt "(if0 %a %a %a)"
+      print_expr e1 print_expr e2 print_expr e3
+  | Unop (op, e) ->
+      Format.fprintf fmt "(%a %a)" print_unop op print_expr e
+  | Binop (op, e1, e2) ->
+      Format.fprintf fmt "(%a %a %a)" print_binop op print_expr e1 print_expr e2
+  | Fold (e1,e2,x,y,e) ->
+      Format.fprintf fmt "(fold %a %a (lambda (%a %a) %a))"
+        print_expr e1 print_expr e2 print_var x print_var y print_expr e
+

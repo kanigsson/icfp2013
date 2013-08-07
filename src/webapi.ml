@@ -26,19 +26,22 @@ let run_client f addr =
   connect sock addr;
   f sock
 
+let output_string ch s = 
+  print_string s
+
 let connect request f =
   let addr = make_addr base_url 80 in
   run_client (fun sock ->
     let in_ch = in_channel_of_descr sock in
     let out_ch = out_channel_of_descr sock in
-    output_string out_ch ("POST "^path request^" HTTP/1.1\r\n");
+    output_string out_ch ("GET "^path request^" HTTP/1.1\r\n");
     output_string out_ch ("Host: "^host_name^"\r\n");
     output_string out_ch "User-Agent: dummy\r\n";
     output_string out_ch "Connection: close\r\n";
     output_string out_ch "Content_Type: application/json\r\n";
     output_string out_ch "\r\n";
-    output_string out_ch "";
     f out_ch;
+    flush Pervasives.stdout;
     flush out_ch;
     let result = ref "" in
     begin try while true do
@@ -50,14 +53,12 @@ let connect request f =
     !result
   ) addr
 
-let num_to_hex_string x = assert false
-
 let print_as_json_dict ch ar =
   output_string ch "[";
   for i = 0 to Array.length ar -1 do
     if i <> 0 then output_string ch ",";
     output_string ch "\"";
-    output_string ch (num_to_hex_string ar.(i));
+    output_string ch (Programs.int64_to_hex_string ar.(i));
     output_string ch "\"\r\n";
   done;
   output_string ch "]"
@@ -66,7 +67,7 @@ let eval prog_id input =
   let x =
   connect "eval" (fun ch ->
     output_string ch "{";
-    output_string ch "program: \"(lambda (x_38661) (not x_38661))\"";
+    output_string ch "program: \"(lambda (x_38661) (not x_38661))\",";
     output_string ch "arguments: ";
     print_as_json_dict ch input;
     output_string ch "} ";) in
