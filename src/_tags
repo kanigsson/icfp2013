@@ -1,7 +1,2 @@
-<<<<<<< HEAD
-<*.ml>: package(yojson), package(unix)
-<main.native>: package(yojson), package(unix)
-=======
 <*.ml>:  package(unix)
 <main.native>: package(unix)
->>>>>>> Suppression de yojson.
