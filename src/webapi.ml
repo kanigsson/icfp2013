@@ -96,6 +96,18 @@ let eval prog_id input =
   print_endline x;
   [| |]
 
+let guess prog_id prog =
+  let x =
+  connect "guess" (fun b ->
+    Buffer.add_char b '{';
+    Buffer.add_string b ("\"id\":\"" ^ prog_id ^ "\",");
+    Buffer.add_string b "\"program\":";
+    Buffer.add_char b '"';
+    Buffer.add_string b (Util.sprintf "%a" Programs.print_program prog);
+    Buffer.add_string b "} ";) in
+  print_endline x;
+  [| |]
+
 let my_problems () =
   let x = connect "myproblems" (fun b -> ()) in
   print_endline x;
