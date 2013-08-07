@@ -3,7 +3,7 @@ open Unix
 type problem_id = string
 
 let base_url = "icfpc2013.cloudapp.net"
-let host_name = "my host"
+let host_name = "myhost"
 
 let token =
   let fd = open_in "secret.txt" in
@@ -26,50 +26,51 @@ let run_client f addr =
   connect sock addr;
   f sock
 
-let output_string ch s = 
-  print_string s
-
 let connect request f =
   let addr = make_addr base_url 80 in
   run_client (fun sock ->
     let in_ch = in_channel_of_descr sock in
     let out_ch = out_channel_of_descr sock in
-    output_string out_ch ("GET "^path request^" HTTP/1.1\r\n");
+    output_string out_ch ("POST "^path request^" HTTP/1.1\r\n");
     output_string out_ch ("Host: "^host_name^"\r\n");
     output_string out_ch "User-Agent: dummy\r\n";
     output_string out_ch "Connection: close\r\n";
     output_string out_ch "Content_Type: application/json\r\n";
+    let b = Buffer.create 257 in
+    f b;
+    output_string out_ch "Content_Length: ";
+    output_string out_ch (string_of_int (Buffer.length b));
     output_string out_ch "\r\n";
-    f out_ch;
-    flush Pervasives.stdout;
+    Buffer.output_buffer out_ch b;
+    output_string out_ch "\r\n";
     flush out_ch;
-    let result = ref "" in
+    let result = Buffer.create 257 in
     begin try while true do
-      result := !result ^ (input_line in_ch);
+      Buffer.add_channel result in_ch 1000
     done
     with End_of_file -> ()
     end;
     close sock;
-    !result
+    Buffer.contents result
   ) addr
 
-let print_as_json_dict ch ar =
-  output_string ch "[";
+let print_as_json_dict b ar =
+  Buffer.add_char b '[';
   for i = 0 to Array.length ar -1 do
-    if i <> 0 then output_string ch ",";
-    output_string ch "\"";
-    output_string ch (Programs.int64_to_hex_string ar.(i));
-    output_string ch "\"\r\n";
+    if i <> 0 then Buffer.add_char b ',';
+    Buffer.add_char b '"';
+    Buffer.add_string b (Programs.int64_to_hex_string ar.(i));
+    Buffer.add_char b '"';
   done;
-  output_string ch "]"
+  Buffer.add_char b ']'
 
 let eval prog_id input =
   let x =
-  connect "eval" (fun ch ->
-    output_string ch "{";
-    output_string ch "program: \"(lambda (x_38661) (not x_38661))\",";
-    output_string ch "arguments: ";
-    print_as_json_dict ch input;
-    output_string ch "} ";) in
+  connect "eval" (fun b ->
+    Buffer.add_char b '{';
+    Buffer.add_string b "program: \"(lambda (x_38661) (not x_38661))\",";
+    Buffer.add_string b "arguments: ";
+    print_as_json_dict b input;
+    Buffer.add_string b "} ";) in
   print_endline x;
   [| |]
