@@ -10,7 +10,9 @@ let token =
   let s = input_line fd in
   s ^ "vpsH1H"
 
-let path request = "/" ^ request ^ "?auth=" ^ token
+let auth_string = "auth=" ^ token
+let get_path request = "GET /" ^ request ^ "?" ^ auth_string
+let post_path request = "POST /" ^ request
 
 let make_addr host_name port =
   let host_addr =
@@ -26,27 +28,41 @@ let run_client f addr =
   connect sock addr;
   f sock
 
+let encode_buffer b =
+  let s = Buffer.contents b in
+  print_endline s;
+  for i = 0 to String.length s - 1 do
+    if s.[i] = ' ' then s.[i] <- '+'
+  done;
+  s
+
 let connect request f =
   let addr = make_addr base_url 80 in
   run_client (fun sock ->
     let in_ch = in_channel_of_descr sock in
     let out_ch = out_channel_of_descr sock in
-    output_string out_ch ("POST "^path request^" HTTP/1.1\r\n");
+    output_string out_ch (post_path request ^ " HTTP/1.1\r\n");
     output_string out_ch ("Host: "^host_name^"\r\n");
     output_string out_ch "User-Agent: dummy\r\n";
     output_string out_ch "Connection: close\r\n";
-    output_string out_ch "Content_Type: application/json\r\n";
+    output_string out_ch "Content-Type: application/json\r\n";
+    output_string out_ch "Authorization: ";
+    output_string out_ch token;
+    output_string out_ch "\r\n";
     let b = Buffer.create 257 in
     f b;
-    output_string out_ch "Content_Length: ";
+    output_string out_ch "Content-Length: ";
     output_string out_ch (string_of_int (Buffer.length b));
     output_string out_ch "\r\n";
-    Buffer.output_buffer out_ch b;
+    output_string out_ch "\r\n";
+    let code = encode_buffer b in
+    output_string out_ch code;
     output_string out_ch "\r\n";
     flush out_ch;
     let result = Buffer.create 257 in
     begin try while true do
-      Buffer.add_channel result in_ch 1000
+      Buffer.add_string result (input_line in_ch);
+      Buffer.add_char result '\n'
     done
     with End_of_file -> ()
     end;
@@ -68,8 +84,8 @@ let eval prog_id input =
   let x =
   connect "eval" (fun b ->
     Buffer.add_char b '{';
-    Buffer.add_string b "program: \"(lambda (x_38661) (not x_38661))\",";
-    Buffer.add_string b "arguments: ";
+    Buffer.add_string b "\"program\":\"(lambda (x_38661) (not x_38661))\",";
+    Buffer.add_string b "\"arguments\":";
     print_as_json_dict b input;
     Buffer.add_string b "} ";) in
   print_endline x;
