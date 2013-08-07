@@ -104,6 +104,7 @@ let guess prog_id prog =
     Buffer.add_string b "\"program\":";
     Buffer.add_char b '"';
     Buffer.add_string b (Util.sprintf "%a" Programs.print_program prog);
+    Buffer.add_char b '"';
     Buffer.add_string b "} ";) in
   print_endline x;
   [| |]
