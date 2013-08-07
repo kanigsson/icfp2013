@@ -89,7 +89,7 @@ let eval prog_id input =
   let x =
   connect "eval" (fun b ->
     Buffer.add_char b '{';
-    Buffer.add_string b ("\"id\":\"" ^ prog_id ^ \",";
+    Buffer.add_string b ("\"id\":\"" ^ prog_id ^ "\",");
     Buffer.add_string b "\"arguments\":";
     print_as_json_dict b input;
     Buffer.add_string b "} ";) in
