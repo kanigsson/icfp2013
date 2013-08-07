@@ -1,1 +1,2 @@
 <src>: include
+<main.native>: package(json)

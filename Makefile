@@ -1,4 +1,4 @@
 .PHONY: force
 
 all: force
-	ocamlbuild main.native
+	ocamlbuild -use-ocamlfind main.native
