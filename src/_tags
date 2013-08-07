@@ -1,2 +1,2 @@
-<*.ml>: package(yojson)
-<main.native>: package(yojson)
+<*.ml>: package(yojson), package(unix)
+<main.native>: package(yojson), package(unix)
