@@ -10,3 +10,5 @@ type problem =
   }
 
 val my_problems : unit -> problem list
+
+val train : int -> unit

@@ -35,7 +35,6 @@ let run_client f addr =
 
 let encode_buffer b =
   let s = Buffer.contents b in
-  print_endline s;
   for i = 0 to String.length s - 1 do
     if s.[i] = ' ' then s.[i] <- '+'
   done;
@@ -61,6 +60,7 @@ let connect request f =
       let code = encode_buffer b in
       output_string out_ch code;
     end;
+    output_string out_ch "\r\n";
     output_string out_ch "\r\n";
     flush out_ch;
     let result = Buffer.create 257 in
@@ -112,3 +112,12 @@ let my_problems () =
   let x = connect "myproblems" (fun b -> ()) in
   print_endline x;
   []
+
+let train size =
+  let x =
+  connect "train" (fun b ->
+    Buffer.add_string b "{\"size\":";
+    Buffer.add_string b (string_of_int size);
+    Buffer.add_string b "}";
+    Buffer.add_char b) in
+  print_endline x

@@ -12,3 +12,5 @@ val size : 'a program -> int
 val int64_to_hex_string : int64 -> string
 
 val print_program : Format.formatter -> id program -> unit
+
+val validates_constraints : int64 array -> int64 array -> id program -> bool
