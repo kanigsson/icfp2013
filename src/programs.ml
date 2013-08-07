@@ -74,3 +74,13 @@ let naive_eval_expr =
 let naive_eval p input =
   naive_eval_expr (IdMap.singleton p.input input) p.expr
 
+
+let rec expr_size e =
+  match e with
+  | Const _ | Var _ -> 1
+  | If_Zero (e1,e2,e3) -> 1 + expr_size e1 + expr_size e2 + expr_size e3
+  | Unop (_,e) -> 1 + expr_size e
+  | Binop (_,e1,e2) -> 1 + expr_size e1 + expr_size e2
+  | Fold (e0,e1,_,_,e2) -> 2 + expr_size e2 + expr_size e2 + expr_size e0
+
+let size p = 1 + expr_size p.expr

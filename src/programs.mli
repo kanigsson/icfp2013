@@ -28,3 +28,5 @@ type program =
   { input : id; expr : expr }
 
 val naive_eval : program -> int64 -> int64
+
+val size : program -> int
