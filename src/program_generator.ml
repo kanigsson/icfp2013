@@ -65,11 +65,17 @@ let make unops binops fold_kind size =
 
   and random_binop size =
     let size = size - 1 in
-    let size_left =
+    let size1 =
       if size = 2 then 1
       else Random.int (size - 2) + 1
     in
-    let size_right = size - size_left in
+    let size2 = size - size1 in
+    let size_left, size_right =
+      (* Comme tous les opérateurs binaires sont commutatifs,
+         on peut representer toutes les fonctions en respectant
+         l'invariant que size_left < size_right. *)
+      if size1 < size2 then (size1, size2) else (size2, size1)
+    in
     Binop (binops.(Random.int nb_binops),
            random_expr size_left,
            random_expr size_right)
