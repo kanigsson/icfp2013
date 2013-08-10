@@ -180,7 +180,10 @@ let print_var fmt x =
 
 let rec print_expr fmt e =
   match e with
-  | Const c -> Format.fprintf fmt "%s" (int64_to_hex_string c)
+  | Const c ->
+      if c = Int64.zero then Format.fprintf fmt "0"
+      else if c = Int64.one then Format.fprintf fmt "1"
+      else Format.fprintf fmt "%s" (int64_to_hex_string c)
   | Var x -> print_var fmt x
   | If_Zero (e1, e2, e3) ->
       Format.fprintf fmt "(if0 %a %a %a)"
