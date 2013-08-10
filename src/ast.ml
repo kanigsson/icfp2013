@@ -7,6 +7,9 @@ let gen_id =
   let cpt = ref 0 in
   (fun x -> incr cpt; { name = x; value = Int64.zero; id = !cpt; })
 
+let print_id fmt x =
+  Format.fprintf fmt "%s_%d" x.name x.id
+
 module IdMap = Map.Make (struct
   type t = id
   let compare id1 id2 = compare id1.id id2.id

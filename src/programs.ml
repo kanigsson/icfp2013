@@ -164,7 +164,8 @@ let print_binop fmt op =
   | Xor -> Format.fprintf fmt "xor"
   | Plus -> Format.fprintf fmt "plus"
 
-let print_var fmt x = assert false
+let print_var fmt x =
+  print_id fmt x
 
 let rec print_expr fmt e =
   match e with
@@ -181,3 +182,7 @@ let rec print_expr fmt e =
       Format.fprintf fmt "(fold %a %a (lambda (%a %a) %a))"
         print_expr e1 print_expr e2 print_var x print_var y print_expr e
 
+let print_program fmt p =
+  Format.fprintf fmt "(lambda (%a) %a)"
+    print_var p.input
+    print_expr p.expr

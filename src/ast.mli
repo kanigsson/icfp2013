@@ -3,7 +3,9 @@ type id =
       mutable value : Int64.t;
       id : int; }
 
-val gen_id: string -> id
+val gen_id : string -> id
+
+val print_id : Format.formatter -> id -> unit
 
 module IdMap : Map.S with type key = id
 module IdSet : Set.S with type elt = id

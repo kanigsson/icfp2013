@@ -9,3 +9,5 @@ val naive_eval : id program -> int64 -> int64
 val eval : id program -> int64 -> int64
 
 val int64_to_hex_string : int64 -> string
+
+val print_program : Format.formatter -> id program -> unit
