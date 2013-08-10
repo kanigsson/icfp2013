@@ -9,29 +9,8 @@ let test_parse_and_eval () =
   let naive_v = naive_eval p Int64.zero in
   assert (v = naive_v);
   Format.printf "input : %s@." p.input.name
-
-let test_generator () =
-  let unops =
-    [| Not;
-       Shl1;
-       Shr1;
-       Shr4;
-       Shr16; |]
-  in
-  let binops =
-    [| And;
-       Or;
-       Xor;
-       Plus; |]
-  in
-  let size = 30 in
-  let fold_kind = Program_generator.Top_fold (* No_fold *) in
-  let generator = Program_generator.make unops binops fold_kind size in
-  let p = generator () in
-    Format.printf "%a@." print_program p;
-  Format.printf "%d = %d"  size (Programs.size p);
-  ()
 *)
+
 
 (*
 let _ =
@@ -46,6 +25,16 @@ let rec find_program input output gen =
   if Programs.validates_constraints input output p then p
   else find_program input output gen
 
+
+
+let () =
+  let seed = 3 (* int_of_string Sys.argv.(1) *) in
+  Random.init seed;
+  Bench.generation 5 Program_generator.No_fold 10_000_000;
+  Bench.find_programs 15 Program_generator.No_fold 75;
+  ()
+
+(*
 let _ =
   let p = Programs.program_of_file "training_programs/exp6.p" in
   let p = Programs.scoping p in
@@ -60,5 +49,4 @@ let _ =
   let p = find_program input out gen in
   Format.printf "%a@." Programs.print_program p;
   Format.printf "%d@." !x
-
-
+*)
