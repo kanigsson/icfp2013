@@ -18,22 +18,37 @@ let make unops binops fold_kind size =
     | No_fold -> [| Var input |]
     | Top_fold | Inner_fold -> [| Var input; Var v ; Var acc; |]
   in
-  let exprs_size_1 =
+  let values =
     Array.append
       [| Const Int64.zero;
          Const Int64.one; |]
       vars
   in
-  let nb_size_1 = Array.length exprs_size_1 in
+  let nb_size_1 = Array.length values in
 
-  let nb_size_2 = nb_unops * nb_size_1 in
-  let exprs_size_2 =
-    let tmp = Array.make nb_size_2 (Const Int64.zero) in
+  let nb_unop_size_2 = nb_unops * nb_size_1 in
+  let unop_size_2 =
+    let tmp = Array.make nb_unop_size_2 (Const Int64.zero) in
     let k = ref 0 in
     for i = 0 to nb_unops - 1 do
       for j = 0 to nb_size_1 - 1 do
-        tmp.(!k) <- Unop (unops.(i), exprs_size_1.(j));
+        tmp.(!k) <- Unop (unops.(i), values.(j));
         incr k
+      done
+    done;
+    tmp
+  in
+
+  let nb_binop_size_3 = nb_binops * (nb_size_1 * (nb_size_1 + 1) / 2) in
+  let binop_size_3 =
+    let tmp = Array.make nb_binop_size_3 (Const Int64.zero) in
+    let k = ref 0 in
+    for i = 0 to nb_binops - 1 do
+      for j = 0 to nb_size_1 - 1 do
+        for j' = j (* car assoc *) to nb_size_1 - 1 do
+          tmp.(!k) <- Binop (binops.(i), values.(j), values.(j'));
+          incr k
+        done
       done
     done;
     tmp
@@ -55,30 +70,33 @@ let make unops binops fold_kind size =
           random_binop n
 
   and random_value () =
-    exprs_size_1.(Random.int nb_size_1)
+    values.(Random.int nb_size_1)
 
   and random_unop size =
     if size = 2 then
-      exprs_size_2.(Random.int nb_size_2)
+      unop_size_2.(Random.int nb_unop_size_2)
     else
       Unop (unops.(Random.int nb_unops), random_expr (size - 1))
 
   and random_binop size =
-    let size = size - 1 in
-    let size1 =
-      if size = 2 then 1
-      else Random.int (size - 2) + 1
-    in
-    let size2 = size - size1 in
-    let size_left, size_right =
-      (* Comme tous les opérateurs binaires sont commutatifs,
-         on peut representer toutes les fonctions en respectant
-         l'invariant que size_left < size_right. *)
-      if size1 < size2 then (size1, size2) else (size2, size1)
-    in
-    Binop (binops.(Random.int nb_binops),
-           random_expr size_left,
-           random_expr size_right)
+    if size = 3 then
+      binop_size_3.(Random.int nb_binop_size_3)
+    else
+      let size = size - 1 in
+      let size1 =
+        if size = 2 then 1
+        else Random.int (size - 2) + 1
+      in
+      let size2 = size - size1 in
+      let size_left, size_right =
+        (* Comme tous les opérateurs binaires sont commutatifs,
+           on peut representer toutes les fonctions en respectant
+           l'invariant que size_left < size_right. *)
+        if size1 < size2 then (size1, size2) else (size2, size1)
+      in
+      Binop (binops.(Random.int nb_binops),
+             random_expr size_left,
+             random_expr size_right)
   in
   fun () ->
     match fold_kind with
