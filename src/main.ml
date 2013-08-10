@@ -23,17 +23,18 @@ let test_generator () =
        Xor;
        Plus; |]
   in
-  let generator =
-    Program_generator.make unops binops Program_generator.No_fold 30
-  in
-  Format.printf "%a@." print_program (generator ())
-
+  let size = 30 in
+  let fold_kind = Program_generator.Top_fold (* No_fold *) in
+  let generator = Program_generator.make unops binops fold_kind size in
+  let p = generator () in
+  Format.printf "%a@." print_program p;
+  Format.printf "%d = %d"  size (Programs.size p);
+  ()
 
 let _ =
   print_endline "hello";
-  let x = Webapi.my_problems () in
-  x
-(*
+  (* let x = Webapi.my_problems () in *)
+  (* x *)
+
   Random.self_init ();
   test_generator ()
-*)

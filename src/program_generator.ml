@@ -5,12 +5,12 @@ type fold_kind =
   | Top_fold
   | Inner_fold
 
-let make unops binops fold size =
+let make unops binops fold_kind size =
   let input = gen_id "x" in
+  let v = gen_id "v" in
+  let acc = gen_id "acc" in
   let vars =
-    let v = gen_id "v" in
-    let acc = gen_id "acc" in
-    match fold with
+    match fold_kind with
     | No_fold -> [| Var input |]
     | Top_fold | Inner_fold -> [| Var input; Var v ; Var acc; |]
   in
@@ -57,4 +57,11 @@ let make unops binops fold size =
            random_expr size_right)
   in
   fun () ->
-    { input = input; expr = random_expr (size - 1); }
+    match fold_kind with
+    | No_fold ->
+        { input = input; expr = random_expr (size - 1); }
+    | Top_fold ->
+        let e = random_expr (size - 5) in
+        { input = input; expr = Fold (Var input, Const Int64.zero, acc, v, e); }
+    | Inner_fold ->
+        failwith "Program_generator: TODO"
