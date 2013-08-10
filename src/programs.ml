@@ -1,31 +1,22 @@
-type id = int
+open Ast
 
-module IdMap = Map.Make (struct type t = id let compare = compare end)
-module IdSet = Set.Make (struct type t = id let compare = compare end)
-
-type unop =
-  | Not
-  | Shl1
-  | Shr1
-  | Shr4
-  | Shr16
-
-type binop =
-  | And
-  | Or
-  | Xor
-  | Plus
-
-type 'id expr =
-  | Const of int64
-  | Var of 'id
-  | If_Zero of 'id expr * 'id expr * 'id expr
-  | Unop of unop * 'id expr
-  | Binop of binop * 'id expr * 'id expr
-  | Fold of 'id expr * 'id expr * 'id * 'id * 'id expr
-
-type 'id program =
-  { input : 'id; expr : 'id expr }
+let scoping p =
+  let input = gen_id p.input in
+  let rec scope env e =
+    match e with
+    | Const i -> Const i
+    | Var id -> Var (List.assoc id env)
+    | If_Zero (e, e1, e2) -> If_Zero (scope env e, scope env e1, scope env e2)
+    | Unop (op, e) -> Unop (op, scope env e)
+    | Binop (op, e1, e2) -> Binop (op, scope env e1, scope env e2)
+    | Fold (e1, e2, x, y, e) ->
+        let x' = gen_id x in
+        let y' = gen_id y in
+        let env' = (x,x') :: (y,y') :: env in
+        Fold (scope env e1, scope env e2, x', y', scope env' e)
+  in
+  { input = input;
+    expr = scope [p.input, input] p.expr; }
 
 let apply_unop op r =
   match op with

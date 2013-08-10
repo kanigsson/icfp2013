@@ -1,7 +1,7 @@
 {
   open Lexing
   open Parser
-  open Programs
+  open Ast
 
   exception Lexical_error of string
 

@@ -1,5 +1,5 @@
 %{
-open Programs
+open Ast
 (*
  program    P ::= "(" "lambda" "(" id ")" e ")"
  expression e ::= "0" | "1" | id
@@ -14,8 +14,8 @@ open Programs
 %}
 
 %token <string> IDENT
-%token <Programs.unop> OP1
-%token <Programs.binop> OP2
+%token <Ast.unop> OP1
+%token <Ast.binop> OP2
 %token IF0
 %token FOLD
 %token <int> INT
@@ -27,7 +27,7 @@ open Programs
 /* Point d'entrée */
 
 %start file
-%type <string Programs.program> file
+%type <string Ast.program> file
 
 %%
 
