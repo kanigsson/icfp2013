@@ -1,6 +1,19 @@
 open Ast
 open Programs
 
+let args =
+  let seed = ref (-1) in
+  let rev_args = ref [] in
+  Arg.parse
+    ["-seed", Arg.Set_int seed, "Set the seed of the random generator" ]
+    (fun x -> rev_args := x :: !rev_args)
+    "options:";
+  let () =
+    if !seed = -1 then Random.self_init ()
+    else Random.init !seed
+  in
+  List.rev !rev_args
+
 (*
 let test_parse_and_eval () =
   let p = program_of_file Sys.argv.(1) in
@@ -28,9 +41,7 @@ let rec find_program input output gen =
 
 
 let () =
-  let seed = 3 (* int_of_string Sys.argv.(1) *) in
-  Random.init seed;
-  Bench.generation 5 Program_generator.No_fold 10_000_000;
+  Bench.generation 5 Program_generator.No_fold 1_000_000;
   Bench.find_programs 15 Program_generator.No_fold 75;
   ()
 
