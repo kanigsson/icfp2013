@@ -6,6 +6,10 @@ type fold_kind =
   | Inner_fold
 
 let make unops binops fold_kind size =
+  let nb_unops = Array.length unops in
+  let nb_binops = Array.length binops in
+
+
   let input = gen_id "x" in
   let v = gen_id "v" in
   let acc = gen_id "acc" in
@@ -20,9 +24,20 @@ let make unops binops fold_kind size =
          Const Int64.one; |]
       vars
   in
-  let nb_unops = Array.length unops in
-  let nb_binops = Array.length binops in
   let nb_size_1 = Array.length exprs_size_1 in
+
+  let nb_size_2 = nb_unops * nb_size_1 in
+  let exprs_size_2 =
+    let tmp = Array.make nb_size_2 (Const Int64.zero) in
+    let k = ref 0 in
+    for i = 0 to nb_unops - 1 do
+      for j = 0 to nb_size_1 - 1 do
+        tmp.(!k) <- Unop (unops.(i), exprs_size_1.(j));
+        incr k
+      done
+    done;
+    tmp
+  in
 
   let rec random_expr size =
     match size with
@@ -43,7 +58,10 @@ let make unops binops fold_kind size =
     exprs_size_1.(Random.int nb_size_1)
 
   and random_unop size =
-    Unop (unops.(Random.int nb_unops), random_expr (size - 1))
+    if size = 2 then
+      exprs_size_2.(Random.int nb_size_2)
+    else
+      Unop (unops.(Random.int nb_unops), random_expr (size - 1))
 
   and random_binop size =
     let size = size - 1 in
