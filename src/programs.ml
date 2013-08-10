@@ -1,5 +1,15 @@
 open Ast
 
+let program_of_file f =
+  let c = open_in f in
+  let lb = Lexing.from_channel c in
+  Parser.file Lexer.token lb
+
+let program_of_string s =
+  let lb = Lexing.from_string s in
+  Parser.file Lexer.token lb
+
+
 let scoping p =
   let input = gen_id p.input in
   let rec scope env e =

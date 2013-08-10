@@ -1,5 +1,8 @@
 open Ast
 
+val program_of_file : string -> string program
+val program_of_string : string -> string program
+
 val scoping : string program -> id program
 
 val naive_eval : id program -> int64 -> int64
