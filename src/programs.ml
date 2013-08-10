@@ -128,7 +128,7 @@ let rec expr_size e =
   | If_Zero (e1,e2,e3) -> 1 + expr_size e1 + expr_size e2 + expr_size e3
   | Unop (_,e) -> 1 + expr_size e
   | Binop (_,e1,e2) -> 1 + expr_size e1 + expr_size e2
-  | Fold (e0,e1,_,_,e2) -> 2 + expr_size e2 + expr_size e2 + expr_size e0
+  | Fold (e0,e1,_,_,e2) -> 2 + expr_size e0 + expr_size e1 + expr_size e2
 
 let size p = 1 + expr_size p.expr
 
