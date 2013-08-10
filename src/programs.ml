@@ -66,6 +66,41 @@ let naive_eval p input =
   naive_eval_expr (IdMap.singleton p.input input) p.expr
 
 
+let eval_expr =
+  let rec eval e =
+    match e with
+    | Const c -> c
+    | Unop (op, e) ->
+        let r = eval e in
+        apply_unop op r
+    | Binop (op, e1, e2) ->
+        let r1 = eval e1 in
+        let r2 = eval e2 in
+        apply_binop op r1 r2
+    | If_Zero (e1,e2,e3) ->
+        let r = eval e1 in
+        if r = Int64.zero then eval e1 else eval e2
+    | Var v -> v.value
+    | Fold (e0,e1,x,y,e2) ->
+        let v = eval e0 in
+        let acc = eval e1 in
+        y.value <- acc;
+        for i = 1 to 8 do
+          let input =
+            Int64.logand (Int64.of_int 255) (Int64.shift_right v ((i-1)*8))
+          in
+          x.value <- input;
+          y.value <- eval e2
+        done;
+        y.value
+  in
+  eval
+
+let eval p input =
+  p.input.value <- input;
+  eval_expr p.expr
+
+
 let rec expr_size e =
   match e with
   | Const _ | Var _ -> 1
