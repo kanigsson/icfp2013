@@ -16,15 +16,15 @@ type binop =
   | Xor
   | Plus
 
-type expr =
+type 'id expr =
   | Const of int64
-  | Var of id
-  | If_Zero of expr * expr * expr
-  | Unop of unop * expr
-  | Binop of binop * expr * expr
-  | Fold of expr * expr * id * id * expr
+  | Var of 'id
+  | If_Zero of 'id expr * 'id expr * 'id expr
+  | Unop of unop * 'id expr
+  | Binop of binop * 'id expr * 'id expr
+  | Fold of 'id expr * 'id expr * 'id * 'id * 'id expr
 
-type program =
-  { input : id; expr : expr }
+type 'id program =
+  { input : 'id; expr : 'id expr }
 
-val naive_eval : program -> int64 -> int64
+val naive_eval : id program -> int64 -> int64
