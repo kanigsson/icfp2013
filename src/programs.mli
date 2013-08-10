@@ -22,11 +22,9 @@ type expr =
   | If_Zero of expr * expr * expr
   | Unop of unop * expr
   | Binop of binop * expr * expr
-  | Fold of expr * expr * id * id * expr
+  | Fold of expr * id * id * expr * expr
 
 type program =
   { input : id; expr : expr }
 
 val naive_eval : program -> int64 -> int64
-
-val size : program -> int

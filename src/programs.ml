@@ -22,7 +22,7 @@ type expr =
   | If_Zero of expr * expr * expr
   | Unop of unop * expr
   | Binop of binop * expr * expr
-  | Fold of expr * expr * id * id * expr
+  | Fold of expr * id * id * expr * expr
 
 type program =
   { input : id; expr : expr }
@@ -58,29 +58,10 @@ let naive_eval_expr =
         if r = Int64.zero then eval map e1 else eval map e2
     | Var v -> IdMap.find v map
     | Fold (e0,e1,x,y,e2) ->
-        let v = eval map e0 in
-        let acc = ref (eval map e1) in
-        for i = 1 to 8 do
-          let map = IdMap.add y !acc map in
-          let input =
-            Int64.logand (Int64.of_int 255) (Int64.shift_right v ((i-1)*8)) in
-          let map = IdMap.add x input map in
-          acc := eval map e2
-        done;
-        !acc
+        assert false
   in
   eval
 
 let naive_eval p input =
   naive_eval_expr (IdMap.singleton p.input input) p.expr
 
-
-let rec expr_size e =
-  match e with
-  | Const _ | Var _ -> 1
-  | If_Zero (e1,e2,e3) -> 1 + expr_size e1 + expr_size e2 + expr_size e3
-  | Unop (_,e) -> 1 + expr_size e
-  | Binop (_,e1,e2) -> 1 + expr_size e1 + expr_size e2
-  | Fold (e0,e1,_,_,e2) -> 2 + expr_size e2 + expr_size e2 + expr_size e0
-
-let size p = 1 + expr_size p.expr
