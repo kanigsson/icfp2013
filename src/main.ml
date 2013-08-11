@@ -14,10 +14,17 @@ let print_64_array x =
   done;
   Format.printf "|]"
 
-let rec find_program input output gen =
-  let p = gen () in
-  if Programs.validates_constraints input output p then p
-  else find_program input output gen
+let rec find_program n start_time timeout input output gen =
+  if n = 100000 then
+    (Format.printf "Computing... @.";
+     if Sys.time () -. start_time < timeout then
+       find_program 0 start_time timeout input output gen
+     else
+       None)
+  else
+    let p = gen () in
+    if Programs.validates_constraints input output p then Some p
+    else find_program (n + 1) start_time timeout input output gen
 
 let run_guesser problem =
   Format.printf "Problem: @[%a@]@." print_problem problem;
@@ -40,24 +47,29 @@ let run_guesser problem =
   print_64_array out;
   Format.printf "@]@.";
   let rec run input output =
-    try begin
-    Format.printf "obtained eval@.";
-    let p = find_program input output gen in
-    Format.printf "found program: @[%a@]@." print_program p;
-    let gr = Webapi.guess problem.pb_id p in
-    Format.printf "guessed problem@.";
-    match gr with
-    | Json.Guess_win ->
-        Format.printf "Win program %s: %a@." problem.pb_id print_program p
-    | Json.Guess_mismatch (in_,out_corr, old_) ->
-        Format.printf "incorrect for %s,%s,%s@."
-          (int64_to_hex_string in_) (int64_to_hex_string out_corr)
-          (int64_to_hex_string old_);
-        run (Array.append input [|in_|]) (Array.append output [|out_corr|])
-    | Json.Guess_error s ->
-        Format.printf "guess error: %s@." s;
-        assert false
-    end
+    try
+      Format.printf "obtained eval@.";
+      begin match find_program 0 (Sys.time ()) 300. input output gen with
+      | Some p ->
+          Format.printf "found program: @[%a@]@." print_program p;
+          let gr = Webapi.guess problem.pb_id p in
+          Format.printf "guessed problem@.";
+          begin match gr with
+          | Json.Guess_win ->
+              Format.printf "Win program %s: %a@." problem.pb_id print_program p
+          | Json.Guess_mismatch (in_,out_corr, old_) ->
+              Format.printf "incorrect for %s,%s,%s@."
+                (int64_to_hex_string in_) (int64_to_hex_string out_corr)
+                (int64_to_hex_string old_);
+              run (Array.append input [|in_|]) (Array.append output [|out_corr|])
+          | Json.Guess_error s ->
+              Format.printf "guess error: %s@." s;
+              assert false
+          end
+      | None ->
+          Format.printf "Timeout !!!@.";
+          exit 1
+      end
     with Webapi.Error (code, msg) ->
       Format.eprintf "Warning %d: %s@." code msg;
       run input output
