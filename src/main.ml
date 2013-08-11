@@ -18,16 +18,6 @@ let size, args =
   in
   !size, List.rev !rev_args
 
-(*
-let test_parse_and_eval () =
-  let p = program_of_file Sys.argv.(1) in
-  let p = scoping p in
-  let v = eval p Int64.zero in
-  let naive_v = naive_eval p Int64.zero in
-  assert (v = naive_v);
-  Format.printf "input : %s@." p.input.name
-*)
-
 let print_64_array x = 
   Format.printf "[|";
   for i = 0 to Array.length x - 1 do
@@ -35,20 +25,35 @@ let print_64_array x =
   done;
   Format.printf "|]"
 
-let _ =
-  let i = Webapi.eval "vU4PfjL9rb6g4T2uEAUMVDWt" Arguments.int_64_arguments in
-  print_64_array i
-
-
-(*
-let x = ref 0
-
 let rec find_program input output gen =
-  incr x;
   let p = gen () in
   if Programs.validates_constraints input output p then p
   else find_program input output gen
 
+let run_guesser problem =
+  let gen = 
+    Program_generator.make
+      problem.pb_unop
+      problem.pb_binop
+      problem.fold_kind
+      problem.pb_size in
+  let input = Arguments.int_64_arguments in
+  let out = Webapi.eval problem.pb_id input in
+  let rec run input output =
+    let p = find_program input out gen in
+    let gr = Webapi.guess problem.pb_id p in
+    match gr with
+    | Json.Guess_win ->
+        Format.printf "guessed program %s" problem.pb_id
+    | Json.Guess_mismatch (in_,out_corr, _) ->
+        run (Array.append input [|in_|]) (Array.append input [|out_corr|])
+    | Json.Guess_error s ->
+        Format.printf "guess error: %s" s;
+        assert false
+  in
+  run input out
+
+(*
 
 
 let () =

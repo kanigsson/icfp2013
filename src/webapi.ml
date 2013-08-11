@@ -149,7 +149,7 @@ let eval prog_id input =
   match r with
   | Json.Eval_ok a -> a
   | Json.Eval_error s ->
-      Format.printf "Error in answer: %s@.";
+      Format.printf "Error in answer: %s@." s;
       assert false
 
 let guess prog_id prog =
@@ -162,8 +162,9 @@ let guess prog_id prog =
     Buffer.add_string b (Util.sprintf "%a" Programs.print_program prog);
     Buffer.add_char b '"';
     Buffer.add_string b "} ";) in
-  debug_print_result x;
-  [| |]
+  let s = handle_server_error x in
+  let r = Json.guess_response_of_string s in
+  r
 
 let my_problems () =
   let x = connect "myproblems" (fun b -> ()) in

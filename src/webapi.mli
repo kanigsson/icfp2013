@@ -1,3 +1,4 @@
+open Ast
 
 type problem_id = string
 
@@ -12,3 +13,5 @@ type problem =
 val my_problems : unit -> problem list
 
 val train : int -> unit
+
+val guess : problem_id -> id program -> Json.guess_response
