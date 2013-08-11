@@ -56,7 +56,8 @@ type problem =
       pb_unop: unop array;
       pb_binop: binop array;
       pb_fold_kind: fold_kind;
-      pb_with_if: bool; }
+      pb_with_if: bool;
+      pb_solved: bool option; }
 
 
 let string_of_unop op =
@@ -92,5 +93,9 @@ let print_problem fmt p =
   Format.fprintf fmt "]@\n";
   Format.fprintf fmt "fold_kind = %s;@\n" (string_of_fold_kind p.pb_fold_kind);
   Format.fprintf fmt "with_if = %s;@\n" (string_of_bool p.pb_with_if);
+  Format.fprintf fmt "solved = %s;@\n"
+    (match p.pb_solved with
+    | None -> "?"
+    | Some b -> string_of_bool b);
   Format.fprintf fmt "@] }@\n";
   ()

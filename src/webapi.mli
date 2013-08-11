@@ -12,7 +12,7 @@ type problem =
     operators : string;
   }
 
-val my_problems : unit -> problem list
+val my_problems : unit -> unit
 
 val train : int -> unit
 

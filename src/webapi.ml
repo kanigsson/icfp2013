@@ -169,7 +169,7 @@ let guess prog_id prog =
 let my_problems () =
   let x = connect "myproblems" (fun b -> ()) in
   debug_print_result x;
-  []
+  ()
 
 let train size =
   let x =

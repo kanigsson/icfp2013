@@ -46,7 +46,8 @@ type problem =
       pb_unop: unop array;
       pb_binop: binop array;
       pb_fold_kind: fold_kind;
-      pb_with_if: bool; }
+      pb_with_if: bool;
+      pb_solved: bool option;  }
 
 
 val print_problem : Format.formatter -> problem -> unit

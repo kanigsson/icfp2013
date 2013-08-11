@@ -159,13 +159,21 @@ let problem_of_json x =
         | x -> error x
         end
       in
-
+      let solved =
+        try
+          begin match List.assoc "solved" l with
+          | `Bool b -> Some b
+          | x -> error x
+          end
+          with Not_found -> None
+      in
       { pb_id = id;
         pb_size = size;
         pb_with_if = with_if_of_list operators;
         pb_fold_kind = fold_kind_of_list operators;
         pb_unop = unop_of_list operators;
-        pb_binop = binop_of_list operators; }
+        pb_binop = binop_of_list operators;
+        pb_solved = solved; }
   | x -> error x
 
 let problem_of_string x =

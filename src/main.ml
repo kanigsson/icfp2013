@@ -63,6 +63,14 @@ let run_guesser problem =
   in
   run input out
 
+let run_guesser pb =
+  match pb.pb_solved with
+  | None -> run_guesser pb
+  | Some b ->
+      Format.printf "Problem already solved (%s): %a"
+        (string_of_bool b)
+        print_problem pb
+
 let rec run_guesser_list l =
   match l with
   | [] ->
@@ -81,17 +89,17 @@ let rec run_guesser_list l =
           | _ -> exit 1
           end
       in
-      if continue then (sleep 0.2; run_guesser_list l)
+      if continue then (sleep 20.; run_guesser_list l)
       else run_guesser_list (pb :: l)
 
-let first_problem =
-  { pb_id = "2DjZA7zt9wyrobpCB2bA0X8x";
-    pb_size = 3;
-    pb_unop = [| Shr16 |];
-    pb_binop = [| |];
-    pb_fold_kind = No_fold;
-    pb_with_if = false
-  }
+(* let first_problem = *)
+(*   { pb_id = "2DjZA7zt9wyrobpCB2bA0X8x"; *)
+(*     pb_size = 3; *)
+(*     pb_unop = [| Shr16 |]; *)
+(*     pb_binop = [| |]; *)
+(*     pb_fold_kind = No_fold; *)
+(*     pb_with_if = false *)
+(*   } *)
 
 
 
@@ -105,6 +113,7 @@ let problems, args =
   let pb_id = ref "" in
   let all = ref (-1) in
   let problems = ref [] in
+  let get_myproblems = ref false in
   Arg.parse
     ["-pb", Arg.Set_string pb,
      "Parse and solve the problem given in argument";
@@ -113,9 +122,11 @@ let problems, args =
      "-pb_id", Arg.Set_string pb_id,
      "Solve the problem given in argument from myproblems";
      "-all", Arg.Set_int all,
-     "Solve all the problem given in myproblems with size less or equal to the argument";
+     "Solve all the problem given in myproblems with size equal to the argument";
      "-train", Arg.Set_int train,
      "Ask a new test";
+     "-get_myproblems", Arg.Set get_myproblems,
+     "Get the list of problems";
      "-seed", Arg.Set_int seed,
      "Set the seed of the random generator" ;
      "-size", Arg.Set_int size,
@@ -128,6 +139,9 @@ let problems, args =
   in
   let () =
     if !train > 0 then (Webapi.train !train; exit 0)
+  in
+  let () =
+    if !get_myproblems then (Webapi.my_problems (); exit 0)
   in
   let () =
     if !size > 0 then force_size := Some !size
@@ -153,7 +167,7 @@ let problems, args =
   in
   let () =
     if !all > 0 then
-      let l = List.filter (fun p -> p.pb_size <= !all) my_problems in
+      let l = List.filter (fun p -> p.pb_size = !all) my_problems in
       problems := !problems @ l
   in
   !problems, List.rev !rev_args
