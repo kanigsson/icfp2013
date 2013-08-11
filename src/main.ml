@@ -23,7 +23,7 @@ let run_guesser problem =
       problem.pb_size in
   let input = Arguments.int_64_arguments in
   let out = Webapi.eval problem.pb_id input in
-  Format.printf "Inputs:@[";
+  Format.printf "Inputs (%d):@[" (Array.length input);
   print_64_array input;
   Format.printf "@]@.";
   Format.printf "Outpouts:@[";

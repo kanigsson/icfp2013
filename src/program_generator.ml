@@ -1,6 +1,20 @@
 open Ast
 
+let rec correction_fold input inside expr =
+  match expr with
+  | Var x ->
+      if inside then Var x
+      else Var input
+  | Fold (e0, e1, x, y , e) ->
+      let e0 = correction_fold input inside e0 in
+      let e1 = correction_fold input inside e1 in
+      let e = correction_fold input true e in
+      Fold (e0, e1, x, y , e)
+  | e -> Programs.expr_map_child (correction_fold input inside) e
+
 let make unops binops fold_kind with_if size =
+  let with_fold_kind = ref fold_kind in
+
   let nb_unops = Array.length unops in
   let nb_binops = Array.length binops in
 
@@ -50,8 +64,6 @@ let make unops binops fold_kind with_if size =
     tmp
   in
 
-  let with_fold_kind = ref fold_kind in
-
   let rec random_expr size =
     match size with
     | 1 -> random_value ()
@@ -63,9 +75,17 @@ let make unops binops fold_kind with_if size =
           random_binop 3
         else
           random_expr 3
+    | 4 ->
+        if nb_unops > 0 && Random.int 100 < 50 then
+          random_unop 4
+        else if nb_binops > 0 && Random.int 100 < 50 then
+          random_binop 4
+        else if with_if && Random.int 100 < 50 then
+          random_if 4
+        else random_expr size
     | n ->
         if !with_fold_kind = Inner_fold && Random.int 100 < 25 then
-          (with_fold_kind := No_fold; random_fold n)
+          random_fold n
         else if nb_unops > 0 && Random.int 100 < 50 then
           random_unop n
         else if nb_binops > 0 && Random.int 100 < 50 then
@@ -131,4 +151,5 @@ let make unops binops fold_kind with_if size =
         let expr = Fold (Var input, Const Int64.zero, acc, v, e) in
         { input = input; expr = (* Programs.simplify_expr *) expr; }
     | Inner_fold ->
-        failwith "Program_generator: TODO"
+        let expr = correction_fold input false (random_expr (size - 1)) in
+        { input = input; expr = (* Programs.simplify_expr *) expr; }
