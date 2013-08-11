@@ -56,7 +56,7 @@ let apply_unop op r =
   | Shl1 -> Int64.shift_left r 1
   | Shr1 -> Int64.shift_right r 1
   | Shr4 -> Int64.shift_right r 4
-  | Shr16 -> Int64.shift_right r 16
+  | Shr16 -> Int64.shift_right_logical r 16
 
 let apply_binop op r1 r2 =
   match op with
