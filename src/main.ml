@@ -53,6 +53,17 @@ let run_guesser problem =
   in
   run input out
 
+let first_problem =
+  { pb_id = "0DLFGFjBUJ4ae7OAeeCy09Jv";
+    pb_size = 3;
+    pb_unop = [| Not |];
+    pb_binop = [| |];
+    pb_fold_kind = No_fold;
+    pb_with_if = false
+  }
+
+let _ = run_guesser first_problem
+
 (*
 
 

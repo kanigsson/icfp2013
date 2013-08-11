@@ -1,7 +1,7 @@
 open Yojson.Safe
 
 let error x =
-  Format.eprintf "%s@." (pretty_to_string x);
+  Format.eprintf "error: %s@." (pretty_to_string x);
   assert false
 
 let find_assoc x l =
@@ -59,7 +59,7 @@ let guess_response_of_string s =
   match from_string s with
   | `Assoc l ->
       begin match find_assoc "status" l with
-      | `String "ok" -> Guess_win
+      | `String "win" -> Guess_win
       | `String "mismatch" ->
           begin match find_assoc "values" l with
           | `List l ->
