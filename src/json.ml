@@ -16,6 +16,16 @@ let int64_of_json x =
   | `Int v -> Int64.of_int v
   | _ -> error x
 
+let find_string x l =
+  match find_assoc x l with
+  | `String s -> s
+  | _ -> assert false
+
+let find_int x l =
+  match find_assoc x l with
+  | `Int v -> v
+  | _ -> assert false
+
 type eval_response =
   | Eval_ok of int64 array
   | Eval_error of string
@@ -39,7 +49,6 @@ let eval_response_of_string s =
       | x -> error x
       end
   | x -> error x
-
 
 type guess_response =
   | Guess_win
@@ -69,3 +78,16 @@ let guess_response_of_string s =
       end
   | x -> error x
 
+type problem 
+let parse_problem x =
+  match x with
+  | `Assoc l ->
+      let id = find_string "id" l in
+      let size = find_int "size" l in
+
+
+let my_problems s =
+  match from_string s with
+  | `List l ->
+      List.map parse_problem l
+  | _ -> assert false

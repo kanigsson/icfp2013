@@ -28,9 +28,17 @@ let test_parse_and_eval () =
   Format.printf "input : %s@." p.input.name
 *)
 
+let print_64_array x = 
+  Format.printf "[|";
+  for i = 0 to Array.length x - 1 do
+    Format.printf "%s;" (Programs.int64_to_hex_string x.(i))
+  done;
+  Format.printf "|]"
 
 let _ =
-  Webapi.eval "vU4PfjL9rb6g4T2uEAUMVDWt" Arguments.int_64_arguments
+  let i = Webapi.eval "vU4PfjL9rb6g4T2uEAUMVDWt" Arguments.int_64_arguments in
+  print_64_array i
+
 
 (*
 let x = ref 0
@@ -65,6 +73,3 @@ let _ =
   Format.printf "%a@." Programs.print_program p;
   Format.printf "%d@." !x
 *)
-
-
-let _ = Json.eval_response_of_string "{ \"status\":\"ok\",\"outputs\":[\"0x0000000000000001\",\"0x0000000000000002\"]}"

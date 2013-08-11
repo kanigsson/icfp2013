@@ -129,6 +129,13 @@ let print_as_json_dict b ar =
   done;
   Buffer.add_char b ']'
 
+let handle_server_error x =
+  match x with
+  | OK s -> s
+  | Error s -> 
+      Format.printf "server error: %s" s;
+      assert false
+
 let eval prog_id input =
   let x =
   connect "eval" (fun b ->
@@ -137,8 +144,13 @@ let eval prog_id input =
     Buffer.add_string b "\"arguments\":";
     print_as_json_dict b input;
     Buffer.add_string b "} ";) in
-  debug_print_result x;
-  [| |]
+  let s = handle_server_error x in
+  let r = Json.eval_response_of_string s in
+  match r with
+  | Json.Eval_ok a -> a
+  | Json.Eval_error s ->
+      Format.printf "Error in answer: %s@.";
+      assert false
 
 let guess prog_id prog =
   let x =
