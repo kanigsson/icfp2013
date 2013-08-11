@@ -199,24 +199,25 @@ let problems, args =
   in
   let () =
     if !all > 0 then
-      (* let is_bool_op op = *)
-      (*   match op with *)
-      (*   | And *)
-      (*   | Or -> true *)
-      (*   | Xor *)
-      (*   | Plus -> false *)
-      (* in *)
-      (* let has_bool_op ops = *)
-      (*   Array.fold_left *)
-      (*     (fun acc op -> acc || is_bool_op op) *)
-      (*     false ops *)
-      (* in *)
+      let is_and op =
+        match op with
+        | And -> true
+        | Or
+        | Xor
+        | Plus -> false
+      in
+      let has_and ops =
+        Array.fold_left
+          (fun acc op -> acc || is_and op)
+          false ops
+      in
       let l =
         List.filter
           (fun p ->
-            p.pb_size = !all &&
-            not p.pb_with_if &&
-            (p.pb_fold_kind = No_fold || p.pb_fold_kind = Top_fold) (* && *)
+            p.pb_size <= !all &&
+            (* not p.pb_with_if && *)
+            (p.pb_fold_kind = No_fold || p.pb_fold_kind = Top_fold) &&
+            (has_and p.pb_binop)
             (* (if p.pb_fold_kind <> No_fold then has_bool_op p.pb_binop *)
             (*  else true) *)
           )
