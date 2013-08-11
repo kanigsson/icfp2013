@@ -45,7 +45,7 @@ let rec find_program input output gen =
 
 let () =
   (* Bench.generation size Program_generator.No_fold 1_000_000; *)
-  Bench.find_programs size Program_generator.No_fold 75;
+  (* Bench.find_programs size Program_generator.No_fold 75; *)
   ()
 *)
 
@@ -65,3 +65,6 @@ let _ =
   Format.printf "%a@." Programs.print_program p;
   Format.printf "%d@." !x
 *)
+
+
+let _ = Json.eval_response_of_string "{ \"status\":\"ok\",\"outputs\":[\"YOLCg1BdhPGmrXVwwxnoFQ7b\",\"0x0000000000000001\",\"0x0000000000000002\"]}"
