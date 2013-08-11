@@ -33,3 +33,17 @@ type 'id expr =
 
 type 'id program =
   { input : 'id; expr : 'id expr }
+
+
+type fold_kind =
+  | No_fold
+  | Top_fold
+  | Inner_fold
+
+type problem =
+    { pb_id: string;
+      pb_size: int;
+      pb_unop: unop array;
+      pb_binop: binop array;
+      fold_kind: fold_kind;
+      with_if: bool; }

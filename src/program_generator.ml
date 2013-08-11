@@ -1,10 +1,5 @@
 open Ast
 
-type fold_kind =
-  | No_fold
-  | Top_fold
-  | Inner_fold
-
 let make unops binops fold_kind size =
   let nb_unops = Array.length unops in
   let nb_binops = Array.length binops in

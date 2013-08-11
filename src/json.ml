@@ -78,16 +78,15 @@ let guess_response_of_string s =
       end
   | x -> error x
 
-type problem 
-let parse_problem x =
-  match x with
-  | `Assoc l ->
-      let id = find_string "id" l in
-      let size = find_int "size" l in
+(* let parse_problem x = *)
+(*   match x with *)
+(*   | `Assoc l -> *)
+(*       let id = find_string "id" l in *)
+(*       let size = find_int "size" l in *)
 
 
-let my_problems s =
-  match from_string s with
-  | `List l ->
-      List.map parse_problem l
-  | _ -> assert false
+(* let my_problems s = *)
+(*   match from_string s with *)
+(*   | `List l -> *)
+(*       List.map parse_problem l *)
+(*   | _ -> assert false *)
