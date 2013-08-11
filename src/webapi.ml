@@ -33,13 +33,6 @@ let run_client f addr =
   connect sock addr;
   f sock
 
-let encode_buffer b =
-  let s = Buffer.contents b in
-  for i = 0 to String.length s - 1 do
-    if s.[i] = ' ' then s.[i] <- '+'
-  done;
-  s
-
 type regexp = 
     { regexp : Str.regexp; 
       fields : (int * string option) list; }
