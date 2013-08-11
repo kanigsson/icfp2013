@@ -155,6 +155,7 @@ let make unops binops fold_kind with_if size =
              random_expr size_right)
 
   and random_fold size =
+    with_fold_kind := No_fold;
     if (* size <= 6 *) true then
       let e0 = random_value () in
       let e1 = random_value () in
