@@ -1,6 +1,5 @@
 open Ast
 open Programs
-open Equiv
 
 let size, args =
   let seed = ref (-1) in
