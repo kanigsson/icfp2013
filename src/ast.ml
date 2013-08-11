@@ -57,3 +57,39 @@ type problem =
       pb_binop: binop array;
       pb_fold_kind: fold_kind;
       pb_with_if: bool; }
+
+
+let string_of_unop op =
+  match op with
+  | Not -> "not"
+  | Shl1 -> "shl1"
+  | Shr1 -> "shr1"
+  | Shr4 -> "shr4"
+  | Shr16 -> "shr16"
+
+let string_of_binop op =
+  match op with
+  | And -> "and"
+  | Or -> "or"
+  | Xor -> "xor"
+  | Plus -> "plus"
+
+let string_of_fold_kind k =
+  match k with
+  | No_fold -> "no fold"
+  | Top_fold -> "tfold"
+  | Inner_fold -> "fold"
+
+
+let print_problem fmt p =
+  Format.fprintf fmt "{ @[id = %s;@\n" p.pb_id;
+  Format.fprintf fmt "size = %d;@\n" p.pb_size;
+  Format.fprintf fmt "unops = [ ";
+  Array.iter (fun op -> Format.fprintf fmt "%s; " (string_of_unop op)) p.pb_unop;
+  Format.fprintf fmt "]@\n";
+  Format.fprintf fmt "binops = [ ";
+  Array.iter (fun op -> Format.fprintf fmt "%s; " (string_of_binop op)) p.pb_binop;
+  Format.fprintf fmt "]@\n";
+  Format.fprintf fmt "fold_kind = %s;@\n" (string_of_fold_kind p.pb_fold_kind);
+  Format.fprintf fmt "with_if = %s;@\n" (string_of_bool p.pb_with_if);
+  ()

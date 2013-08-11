@@ -47,3 +47,6 @@ type problem =
       pb_binop: binop array;
       pb_fold_kind: fold_kind;
       pb_with_if: bool; }
+
+
+val print_problem : Format.formatter -> problem -> unit
