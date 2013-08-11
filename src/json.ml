@@ -1,3 +1,4 @@
+open Ast
 open Yojson.Safe
 
 let error x =
@@ -78,11 +79,96 @@ let guess_response_of_string s =
       end
   | x -> error x
 
-(* let parse_problem x = *)
-(*   match x with *)
-(*   | `Assoc l -> *)
-(*       let id = find_string "id" l in *)
-(*       let size = find_int "size" l in *)
+
+let with_bonus_of_list l =
+  List.mem "bonus" l
+
+let with_if_of_list l =
+  List.mem "if0" l
+
+let fold_kind_of_list l =
+  if List.mem "fold" l then Inner_fold
+  else if List.mem "tfold" l then Top_fold
+  else No_fold
+
+let unop_of_string s =
+  match s with
+  | "not" -> Some Not
+  | "shl1" -> Some Shl1
+  | "shr1" -> Some Shr1
+  | "shr4" -> Some Shr4
+  | "shr16" -> Some Shr16
+  | _ -> None
+
+let unop_of_list l =
+  let ops =
+    List.fold_left
+      (fun acc x ->
+        match unop_of_string x with
+        | Some op -> op :: acc
+        | None -> acc)
+      [] l
+  in
+  Array.of_list ops
+
+let binop_of_string s =
+  match s with
+  | "and" -> Some And
+  | "or" -> Some Or
+  | "xor" -> Some Xor
+  | "plus" -> Some Plus
+  | _ -> None
+
+let binop_of_list l =
+  let ops =
+    List.fold_left
+      (fun acc x ->
+        match binop_of_string x with
+        | Some op -> op :: acc
+        | None -> acc)
+      [] l
+  in
+  Array.of_list ops
+
+
+let problem_of_string x =
+  match from_string x with
+  | `Assoc l ->
+      let id =
+        begin match find_assoc "id" l with
+        | `String s -> s
+        | x -> error x
+        end
+      in
+      let size =
+        begin match find_assoc "size" l with
+        | `Int i -> i
+        | `Intlit s | `String s -> int_of_string s
+        | x -> error x
+        end
+      in
+      let operators =
+        begin match find_assoc "operators" l with
+        | `List l ->
+            List.map
+              (fun x ->
+                match x with
+                | `String x -> x
+                | x -> error x)
+              l
+        | x -> error x
+        end
+      in
+
+      { pb_id = id;
+        pb_size = size;
+        pb_with_if = with_if_of_list operators;
+        pb_fold_kind = fold_kind_of_list operators;
+        pb_unop = unop_of_list operators;
+        pb_binop = binop_of_list operators; }
+  | x -> error x
+
+
 
 
 (* let my_problems s = *)
