@@ -55,5 +55,5 @@ type problem =
       pb_size: int;
       pb_unop: unop array;
       pb_binop: binop array;
-      fold_kind: fold_kind;
-      with_if: bool; }
+      pb_fold_kind: fold_kind;
+      pb_with_if: bool; }
