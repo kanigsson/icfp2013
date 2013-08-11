@@ -39,13 +39,21 @@ let run_guesser problem =
       problem.pb_size in
   let input = Arguments.int_64_arguments in
   let out = Webapi.eval problem.pb_id input in
+  print_64_array input;
+  print_64_array out;
   let rec run input output =
+    Format.printf "obtained eval@.";
     let p = find_program input out gen in
+    Format.printf "found program@.";
     let gr = Webapi.guess problem.pb_id p in
+    Format.printf "guessed problem@.";
     match gr with
     | Json.Guess_win ->
-        Format.printf "guessed program %s" problem.pb_id
-    | Json.Guess_mismatch (in_,out_corr, _) ->
+        Format.printf "guessed program %s@." problem.pb_id
+    | Json.Guess_mismatch (in_,out_corr, old_) ->
+        Format.printf "incorrect for %s,%s,%s@." 
+          (int64_to_hex_string in_) (int64_to_hex_string out_corr)
+          (int64_to_hex_string old_);
         run (Array.append input [|in_|]) (Array.append input [|out_corr|])
     | Json.Guess_error s ->
         Format.printf "guess error: %s" s;
@@ -54,9 +62,9 @@ let run_guesser problem =
   run input out
 
 let first_problem =
-  { pb_id = "0DLFGFjBUJ4ae7OAeeCy09Jv";
+  { pb_id = "2DjZA7zt9wyrobpCB2bA0X8x";
     pb_size = 3;
-    pb_unop = [| Not |];
+    pb_unop = [| Shr16 |];
     pb_binop = [| |];
     pb_fold_kind = No_fold;
     pb_with_if = false
