@@ -35,7 +35,7 @@ let run_guesser problem =
     Program_generator.make
       problem.pb_unop
       problem.pb_binop
-      problem.fold_kind
+      problem.pb_fold_kind
       problem.pb_size in
   let input = Arguments.int_64_arguments in
   let out = Webapi.eval problem.pb_id input in
