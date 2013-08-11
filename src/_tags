@@ -1,3 +1,4 @@
 <*.ml>:  package(unix),package(yojson),package(str)
 <main.native>: package(unix),package(yojson),package(str)
+<main.byte>: package(unix),package(yojson),package(str)
 
