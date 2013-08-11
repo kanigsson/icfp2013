@@ -40,6 +40,52 @@ let encode_buffer b =
   done;
   s
 
+type regexp = 
+    { regexp : Str.regexp; 
+      fields : (int * string option) list; }
+
+let regexp_match r string =
+  let get (pos, default) =
+    try Str.matched_group pos string
+    with Not_found ->
+      begin match default with 
+      | Some s -> s
+      | _ -> raise Not_found 
+      end
+  in
+  try
+    if Str.string_match r.regexp string 0 then
+      Some (List.map get r.fields)
+    else None
+  with Not_found -> None
+   
+let response_regexp = 
+  { regexp = Str.regexp "^HTTP/1.[01][ \t]+\\([0-9]+\\)[ \t]+\\(.*[^\r]\\)\r";
+    fields = [ 1, None; 2, None; ] }
+
+exception Error of string
+
+let error err mes = raise (Error (err ^ ": " ^ mes))
+
+let parse_response line =
+  match regexp_match response_regexp line with
+  | Some (code :: msg :: _) -> (int_of_string code, msg)
+  | _ -> error line "Ill formed response"
+
+let rec remove_headers in_ch =
+  match input_line in_ch with
+  | "\r" -> ()
+  | line -> remove_headers in_ch 
+
+type result =
+  | OK of string
+  | Error of string
+
+let debug_print_result r =
+  match r with
+  | OK s -> Format.printf "%s@." s
+  | Error s -> Format.printf "Error %s@." s
+
 let connect request f =
   let addr = make_addr base_url 80 in
   run_client (fun sock ->
@@ -57,21 +103,27 @@ let connect request f =
       output_string out_ch (string_of_int (Buffer.length b + 4));
       output_string out_ch "\r\n";
       output_string out_ch "\r\n";
-      let code = encode_buffer b in
-      output_string out_ch code;
+      output_string out_ch (Buffer.contents b);
     end;
     output_string out_ch "\r\n";
     output_string out_ch "\r\n";
     flush out_ch;
-    let result = Buffer.create 257 in
-    begin try while true do
-      Buffer.add_string result (input_line in_ch);
-      Buffer.add_char result '\n'
-    done
-    with End_of_file -> ()
-    end;
+    let s = 
+      try
+        match parse_response (input_line in_ch) with
+        | 200, _ ->
+            remove_headers in_ch;
+            let _ = input_line in_ch in
+            let dict = input_line in_ch in
+            begin try while true do
+              ignore (input_line in_ch)
+            done with End_of_file -> () end;
+            OK dict
+        | _, s -> Error s 
+      with End_of_file -> Error "unexpected end of stream"
+    in
     close sock;
-    Buffer.contents result
+    s
   ) addr
 
 let print_as_json_dict b ar =
@@ -92,7 +144,7 @@ let eval prog_id input =
     Buffer.add_string b "\"arguments\":";
     print_as_json_dict b input;
     Buffer.add_string b "} ";) in
-  print_endline x;
+  debug_print_result x;
   [| |]
 
 let guess prog_id prog =
@@ -105,19 +157,19 @@ let guess prog_id prog =
     Buffer.add_string b (Util.sprintf "%a" Programs.print_program prog);
     Buffer.add_char b '"';
     Buffer.add_string b "} ";) in
-  print_endline x;
+  debug_print_result x;
   [| |]
 
 let my_problems () =
   let x = connect "myproblems" (fun b -> ()) in
-  print_endline x;
+  debug_print_result x;
   []
 
 let train size =
   let x =
   connect "train" (fun b ->
-    Buffer.add_string b "{\"size\":";
+    Buffer.add_string b "{\"size\" :";
     Buffer.add_string b (string_of_int size);
     Buffer.add_string b "}";
     Buffer.add_char b) in
-  print_endline x
+  debug_print_result x

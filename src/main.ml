@@ -29,11 +29,10 @@ let test_parse_and_eval () =
 *)
 
 
-(*
 let _ =
   Webapi.train 10
-*)
 
+(*
 let x = ref 0
 
 let rec find_program input output gen =
@@ -48,6 +47,7 @@ let () =
   (* Bench.generation size Program_generator.No_fold 1_000_000; *)
   Bench.find_programs size Program_generator.No_fold 75;
   ()
+*)
 
 (*
 let _ =
