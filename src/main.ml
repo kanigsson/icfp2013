@@ -19,6 +19,7 @@ let run_guesser problem =
       problem.pb_unop
       problem.pb_binop
       problem.pb_fold_kind
+      problem.pb_with_if
       problem.pb_size in
   let input = Arguments.int_64_arguments in
   let out = Webapi.eval problem.pb_id input in
@@ -31,7 +32,7 @@ let run_guesser problem =
   let rec run input output =
     Format.printf "obtained eval@.";
     let p = find_program input out gen in
-    Format.printf "found program@.";
+    Format.printf "found program: @[%a@]@." print_program p;
     let gr = Webapi.guess problem.pb_id p in
     Format.printf "guessed problem@.";
     match gr with
@@ -64,18 +65,24 @@ let size, pb, args =
   let size = ref 15 in
   let rev_args = ref [] in
   let pb = ref "" in
+  let train = ref (-1) in
   Arg.parse
     ["-seed", Arg.Set_int seed,
      "Set the seed of the random generator" ;
      "-size", Arg.Set_int size,
      "Set the size of the generated programs for the benchs" ;
      "-pb", Arg.Set_string pb,
-     "Parse and solve the problem given in argument"]
+     "Parse and solve the problem given in argument";
+     "-train", Arg.Set_int train,
+     "Ask a new test"; ]
     (fun x -> rev_args := x :: !rev_args)
     "options:";
   let () =
     if !seed = -1 then Random.self_init ()
     else Random.init !seed
+  in
+  let () =
+    if !train > 0 then (Webapi.train !train; exit 0)
   in
   !size, !pb, List.rev !rev_args
 

@@ -1,6 +1,6 @@
 open Ast
 
-let make unops binops fold_kind size =
+let make unops binops fold_kind with_if size =
   let nb_unops = Array.length unops in
   let nb_binops = Array.length binops in
 
@@ -42,7 +42,7 @@ let make unops binops fold_kind size =
       for j = 0 to nb_size_1 - 1 do
         for j' = j (* car assoc *) to nb_size_1 - 1 do
           let e = Binop (binops.(i), values.(j), values.(j')) in
-          tmp.(!k) <- Programs.simplify_expr e;
+          tmp.(!k) <- (* Programs.simplify_expr *) e;
           incr k
         done
       done
@@ -50,20 +50,30 @@ let make unops binops fold_kind size =
     tmp
   in
 
+  let with_fold_kind = ref fold_kind in
+
   let rec random_expr size =
     match size with
     | 1 -> random_value ()
     | 2 -> random_unop 2
     | 3 ->
-        if Random.int 100 < 50 then
+        if nb_unops > 0 && Random.int 100 < 50 then
           random_unop 3
-        else
+        else if nb_binops > 0 && Random.int 100 < 50 then
           random_binop 3
+        else
+          random_expr 3
     | n ->
-        if Random.int 100 < 50 then
+        if !with_fold_kind = Inner_fold && Random.int 100 < 25 then
+          (with_fold_kind := No_fold; random_fold n)
+        else if nb_unops > 0 && Random.int 100 < 50 then
           random_unop n
-        else (* if Random.int 100 < 50 then *)
+        else if nb_binops > 0 && Random.int 100 < 50 then
           random_binop n
+        else if with_if && Random.int 100 < 50 then
+          random_if n
+        else random_expr size
+
 
   and random_value () =
     values.(Random.int nb_size_1)
@@ -93,15 +103,32 @@ let make unops binops fold_kind size =
       Binop (binops.(Random.int nb_binops),
              random_expr size_left,
              random_expr size_right)
+
+  and random_fold size =
+    let e0 = random_value () in
+    let e1 = random_value () in
+    let e = random_expr (size - 4) in
+    Fold (e0, e1, acc, v, e)
+
+  and random_if size =
+    let size = size - 1 in
+    let size_cond = Random.int (size / 3) + 1 in
+    let size_left = Random.int ((size - size_cond) / 2) + 1 in
+    let size_right = size - size_cond - size_left in
+    let cond = random_expr size_cond in
+    let left = random_expr size_left in
+    let right = random_expr size_right in
+    If_Zero (cond, left, right)
   in
+
   fun () ->
     match fold_kind with
     | No_fold ->
         let expr = random_expr (size - 1) in
-        { input = input; expr = Programs.simplify_expr expr; }
+        { input = input; expr = (* Programs.simplify_expr *) expr; }
     | Top_fold ->
         let e = random_expr (size - 5) in
         let expr = Fold (Var input, Const Int64.zero, acc, v, e) in
-        { input = input; expr = Programs.simplify_expr expr; }
+        { input = input; expr = (* Programs.simplify_expr *) expr; }
     | Inner_fold ->
         failwith "Program_generator: TODO"
