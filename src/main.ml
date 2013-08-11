@@ -1,6 +1,20 @@
 open Ast
 open Programs
 
+let stats pbs =
+  let ok, ko, dont =
+    List.fold_left
+      (fun (ok, ko, dont) pb ->
+        match pb.pb_solved with
+        | None -> (ok, ko, dont + 1)
+        | Some true -> (ok + 1, ko, dont)
+        | Some false -> (ok, ko + 1, dont))
+      (0, 0, 0) pbs
+  in
+  Format.printf "Win: %d@." ok;
+  Format.printf "Lost: %d@." ko;
+  Format.printf "Todo: %d@." dont
+
 let sleep n =
   Format.printf "Waiting(%f)...@." n;
   ignore (Unix.select [] [] [] n)
@@ -15,7 +29,7 @@ let print_64_array x =
   Format.printf "|]"
 
 let rec find_program n start_time timeout input output gen =
-  if n = 100000 then
+  if n = 1_000_000 then
     (Format.printf "Computing... @.";
      if Sys.time () -. start_time < timeout then
        find_program 0 start_time timeout input output gen
@@ -128,6 +142,7 @@ let problems, args =
   let all = ref (-1) in
   let problems = ref [] in
   let get_myproblems = ref false in
+  let show_stats = ref false in
   Arg.parse
     ["-pb", Arg.Set_string pb,
      "Parse and solve the problem given in argument";
@@ -144,7 +159,10 @@ let problems, args =
      "-seed", Arg.Set_int seed,
      "Set the seed of the random generator" ;
      "-size", Arg.Set_int size,
-     "Force the size of the generated programs" ;]
+     "Force the size of the generated programs" ;
+     "-stat", Arg.Set show_stats,
+     "Display statistics of myproblems";
+   ]
     (fun x -> rev_args := x :: !rev_args)
     "options:";
   let () =
@@ -181,8 +199,14 @@ let problems, args =
   in
   let () =
     if !all > 0 then
-      let l = List.filter (fun p -> p.pb_size = !all) my_problems in
+      let l =
+        List.filter (fun p -> p.pb_size = !all && not p.pb_with_if)
+          my_problems
+      in
       problems := !problems @ l
+  in
+  let () =
+    if !show_stats then (stats my_problems; exit 0)
   in
   !problems, List.rev !rev_args
 
