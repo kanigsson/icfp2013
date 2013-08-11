@@ -22,7 +22,7 @@ let get_path post_get request = post_get ^ request ^ "?" ^ auth_string
 let make_addr host_name port =
   let host_addr =
     try (gethostbyname host_name).h_addr_list.(0)
-    with Not_found -> 
+    with Not_found ->
       prerr_endline (host_name ^ ": Host not found");
       exit 2
   in
@@ -33,17 +33,17 @@ let run_client f addr =
   connect sock addr;
   f sock
 
-type regexp = 
-    { regexp : Str.regexp; 
+type regexp =
+    { regexp : Str.regexp;
       fields : (int * string option) list; }
 
 let regexp_match r string =
   let get (pos, default) =
     try Str.matched_group pos string
     with Not_found ->
-      begin match default with 
+      begin match default with
       | Some s -> s
-      | _ -> raise Not_found 
+      | _ -> raise Not_found
       end
   in
   try
@@ -51,8 +51,8 @@ let regexp_match r string =
       Some (List.map get r.fields)
     else None
   with Not_found -> None
-   
-let response_regexp = 
+
+let response_regexp =
   { regexp = Str.regexp "^HTTP/1.[01][ \t]+\\([0-9]+\\)[ \t]+\\(.*[^\r]\\)\r";
     fields = [ 1, None; 2, None; ] }
 
@@ -68,7 +68,7 @@ let parse_response line =
 let rec remove_headers in_ch =
   match input_line in_ch with
   | "\r" -> ()
-  | line -> remove_headers in_ch 
+  | line -> remove_headers in_ch
 
 type result =
   | OK of string
@@ -101,7 +101,7 @@ let connect request f =
     output_string out_ch "\r\n";
     output_string out_ch "\r\n";
     flush out_ch;
-    let s = 
+    let s =
       try
         match parse_response (input_line in_ch) with
         | 200, _ ->
@@ -112,7 +112,7 @@ let connect request f =
               ignore (input_line in_ch)
             done with End_of_file -> () end;
             OK dict
-        | _, s -> Error s 
+        | _, s -> Error s
       with End_of_file -> Error "unexpected end of stream"
     in
     close sock;
@@ -132,7 +132,7 @@ let print_as_json_dict b ar =
 let handle_server_error x =
   match x with
   | OK s -> s
-  | Error s -> 
+  | Error s ->
       Format.printf "server error: %s" s;
       assert false
 

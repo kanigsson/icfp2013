@@ -22,8 +22,12 @@ let run_guesser problem =
       problem.pb_size in
   let input = Arguments.int_64_arguments in
   let out = Webapi.eval problem.pb_id input in
+  Format.printf "Inputs:@[";
   print_64_array input;
+  Format.printf "@]@.";
+  Format.printf "Outpouts:@[";
   print_64_array out;
+  Format.printf "@]@.";
   let rec run input output =
     Format.printf "obtained eval@.";
     let p = find_program input out gen in
