@@ -63,34 +63,35 @@ let run_guesser problem =
   in
   run input out
 
-let run_guesser pb =
-  match pb.pb_solved with
-  | None -> run_guesser pb
-  | Some b ->
-      Format.printf "Problem already solved (%s): %a"
-        (string_of_bool b)
-        print_problem pb
-
 let rec run_guesser_list l =
   match l with
   | [] ->
       Format.printf "End!@.";
   | pb :: l ->
-      let continue =
-        try run_guesser pb; true
-        with Webapi.Error (code, msg) ->
-          Format.eprintf "Error %a: %s (%d)@.@."
-            print_problem pb
-            msg
-            code;
-          begin match code with
-          | 410 -> true
-          | 412 -> true
-          | _ -> exit 1
-          end
-      in
-      if continue then (sleep 20.; run_guesser_list l)
-      else run_guesser_list (pb :: l)
+      begin match pb.pb_solved with
+      | None ->
+          let continue =
+            try run_guesser pb; true
+            with Webapi.Error (code, msg) ->
+              Format.eprintf "Error %a: %s (%d)@.@."
+                print_problem pb
+                msg
+                code;
+              begin match code with
+              | 410 -> true
+              | 412 -> true
+              | _ -> exit 1
+              end
+          in
+          if continue then
+            (sleep 10.; run_guesser_list l)
+          else run_guesser_list (pb :: l)
+      | Some b ->
+          Format.printf "Problem already solved (%s): %a@."
+            (string_of_bool b)
+            print_problem pb;
+          run_guesser_list l
+      end
 
 (* let first_problem = *)
 (*   { pb_id = "2DjZA7zt9wyrobpCB2bA0X8x"; *)
