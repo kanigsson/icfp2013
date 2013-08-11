@@ -1,6 +1,9 @@
 open Ast
 open Programs
 
+let sleep n =
+  ignore (Unix.select [] [] [] n)
+
 let force_size = ref None
 
 let print_64_array x =
@@ -68,16 +71,17 @@ let rec run_guesser_list l =
       let continue =
         try run_guesser pb; true
         with Webapi.Error (code, msg) ->
-          Format.eprintf "Error %a: %s (%d)@."
+          Format.eprintf "Error %a: %s (%d)@.@."
             print_problem pb
             msg
             code;
           begin match code with
           | 410 -> true
+          | 412 -> true
           | _ -> exit 1
           end
       in
-      if continue then run_guesser_list l
+      if continue then (sleep 0.2; run_guesser_list l)
       else run_guesser_list (pb :: l)
 
 let first_problem =
