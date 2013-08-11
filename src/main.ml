@@ -143,6 +143,7 @@ let problems, args =
   let problems = ref [] in
   let get_myproblems = ref false in
   let show_stats = ref false in
+  let no_fold = ref false in
   Arg.parse
     ["-pb", Arg.Set_string pb,
      "Parse and solve the problem given in argument";
@@ -150,6 +151,7 @@ let problems, args =
      "Load the problem file";
      "-pb_id", Arg.Set_string pb_id,
      "Solve the problem given in argument from myproblems";
+     "-nofold", Arg.Set no_fold, "";
      "-all", Arg.Set_int all,
      "Solve all the problem given in myproblems with size equal to the argument";
      "-train", Arg.Set_int train,
@@ -199,31 +201,38 @@ let problems, args =
   in
   let () =
     if !all > 0 then
-      let is_and op =
-        match op with
-        | And -> true
-        | Or
-        | Xor
-        | Plus -> false
-      in
-      let has_and ops =
-        Array.fold_left
-          (fun acc op -> acc || is_and op)
-          false ops
-      in
+      (* let is_and op = *)
+      (*   match op with *)
+      (*   | And -> true *)
+      (*   | Or *)
+      (*   | Xor *)
+      (*   | Plus -> false *)
+      (* in *)
+      (* let has_and ops = *)
+      (*   Array.fold_left *)
+      (*     (fun acc op -> acc || is_and op) *)
+      (*     false ops *)
+      (* in *)
       let l =
         List.filter
           (fun p ->
-            p.pb_size <= !all &&
+            p.pb_size <= !all (* && *)
             (* not p.pb_with_if && *)
-            (p.pb_fold_kind = No_fold || p.pb_fold_kind = Top_fold) &&
-            (has_and p.pb_binop)
+            (* (p.pb_fold_kind = No_fold || p.pb_fold_kind = Top_fold) && *)
+            (* (has_and p.pb_binop) *)
             (* (if p.pb_fold_kind <> No_fold then has_bool_op p.pb_binop *)
             (*  else true) *)
           )
           my_problems
       in
       problems := !problems @ l
+  in
+  let () =
+    if !no_fold then
+      problems :=
+        List.filter
+          (fun p -> p.pb_fold_kind = No_fold)
+          !problems
   in
   let () =
     if !show_stats then (stats my_problems; exit 0)

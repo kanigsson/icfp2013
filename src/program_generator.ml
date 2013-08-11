@@ -32,7 +32,7 @@ let make unops binops fold_kind with_if size =
       (with_if, unops, binops, size * 2)
     else
       (with_if, unops, binops, size)
- in
+  in
   let unops, size =
     if unops = [||] then ([| Not |], size + 2)
     else (unops, size)
@@ -50,12 +50,12 @@ let make unops binops fold_kind with_if size =
     match fold_kind with
     | No_fold ->
         [| Var input;
-           Var input; Var input; Var input;
-           Var input; Var input; Var input; |]
+           (* Var input; Var input; Var input; *)
+           (* Var input; Var input; Var input;  *)|]
     | Top_fold | Inner_fold ->
         [| Var input; Var v ; Var acc;
-           Var input; Var v ; Var acc;
-           Var input; Var v ; Var acc; |]
+           (* Var input; Var v ; Var acc; *)
+           (* Var input; Var v ; Var acc; *) |]
   in
   let values =
     Array.append
@@ -155,7 +155,7 @@ let make unops binops fold_kind with_if size =
              random_expr size_right)
 
   and random_fold size =
-    if size = 5 then
+    if (* size <= 6 *) true then
       let e0 = random_value () in
       let e1 = random_value () in
       let e = random_expr (size - 4) in
