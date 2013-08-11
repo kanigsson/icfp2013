@@ -49,10 +49,11 @@ let make unops binops fold_kind with_if size =
   let vars =
     match fold_kind with
     | No_fold ->
-        [| Var input; Var input; Var input; Var input; |]
+        [| Var input;
+           Var input; Var input; Var input;
+           Var input; Var input; Var input; |]
     | Top_fold | Inner_fold ->
         [| Var input; Var v ; Var acc;
-           Var input; Var v ; Var acc;
            Var input; Var v ; Var acc;
            Var input; Var v ; Var acc; |]
   in
@@ -154,10 +155,19 @@ let make unops binops fold_kind with_if size =
              random_expr size_right)
 
   and random_fold size =
-    let e0 = random_value () in
-    let e1 = random_value () in
-    let e = random_expr (size - 4) in
-    Fold (e0, e1, acc, v, e)
+    if size = 5 then
+      let e0 = random_value () in
+      let e1 = random_value () in
+      let e = random_expr (size - 4) in
+      Fold (e0, e1, acc, v, e)
+    else
+      let size_e = Random.int (size - 5) + 1 in
+      let size_e0 = Random.int (size - size_e - 2) + 1 in
+      let size_e1 = size - 2 - size_e - size_e0 in
+      let e0 = random_expr size_e0 in
+      let e1 = random_expr size_e1 in
+      let e = random_expr size_e in
+      Fold (e0, e1, acc, v, e)
 
   and _random_if size =
     let size = size - 1 in
