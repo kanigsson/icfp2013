@@ -1,18 +1,23 @@
 open Ast
 open Programs
+open Equiv
 
-let args =
+let size, args =
   let seed = ref (-1) in
+  let size = ref 15 in
   let rev_args = ref [] in
   Arg.parse
-    ["-seed", Arg.Set_int seed, "Set the seed of the random generator" ]
+    ["-seed", Arg.Set_int seed,
+     "Set the seed of the random generator" ;
+     "-size", Arg.Set_int size,
+     "Set the size of the generated programs for the benchs" ; ]
     (fun x -> rev_args := x :: !rev_args)
     "options:";
   let () =
     if !seed = -1 then Random.self_init ()
     else Random.init !seed
   in
-  List.rev !rev_args
+  !size, List.rev !rev_args
 
 (*
 let test_parse_and_eval () =
@@ -41,8 +46,8 @@ let rec find_program input output gen =
 
 
 let () =
-  Bench.generation 5 Program_generator.No_fold 1_000_000;
-  Bench.find_programs 15 Program_generator.No_fold 75;
+  (* Bench.generation size Program_generator.No_fold 1_000_000; *)
+  Bench.find_programs size Program_generator.No_fold 75;
   ()
 
 (*

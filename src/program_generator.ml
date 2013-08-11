@@ -46,7 +46,8 @@ let make unops binops fold_kind size =
     for i = 0 to nb_binops - 1 do
       for j = 0 to nb_size_1 - 1 do
         for j' = j (* car assoc *) to nb_size_1 - 1 do
-          tmp.(!k) <- Binop (binops.(i), values.(j), values.(j'));
+          let e = Binop (binops.(i), values.(j), values.(j')) in
+          tmp.(!k) <- Programs.simplify_expr e;
           incr k
         done
       done
@@ -101,9 +102,11 @@ let make unops binops fold_kind size =
   fun () ->
     match fold_kind with
     | No_fold ->
-        { input = input; expr = random_expr (size - 1); }
+        let expr = random_expr (size - 1) in
+        { input = input; expr = Programs.simplify_expr expr; }
     | Top_fold ->
         let e = random_expr (size - 5) in
-        { input = input; expr = Fold (Var input, Const Int64.zero, acc, v, e); }
+        let expr = Fold (Var input, Const Int64.zero, acc, v, e) in
+        { input = input; expr = Programs.simplify_expr expr; }
     | Inner_fold ->
         failwith "Program_generator: TODO"

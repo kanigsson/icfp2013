@@ -9,6 +9,28 @@ let program_of_string s =
   let lb = Lexing.from_string s in
   Parser.file Lexer.token lb
 
+let expr_map_child f expr =
+  match expr with
+  | Const c ->
+      Const c
+  | Var x ->
+      Var x
+  | If_Zero (e0, e1, e2) ->
+      let e0 = f e0 in
+      let e1 = f e1 in
+      let e2 = f e2 in
+      If_Zero (e0, e1, e2)
+  | Unop (op, e) ->
+      Unop (op, f e)
+  | Binop (op, e1, e2) ->
+      let e1 = f e1 in
+      let e2 = f e2 in
+      Binop (op, e1, e2)
+  | Fold (e1, e2, x, y, e) ->
+      let e1 = f e1 in
+      let e2 = f e2 in
+      let e = f e in
+      Fold (e1, e2, x, y, e)
 
 let scoping p =
   let input = gen_id p.input in
@@ -151,7 +173,7 @@ let single_hex_num c =
   | 14 -> 'E'
   | 15 -> 'F'
   | _ -> assert false
- 
+
 let int64_to_hex_string x =
   let s = String.copy "0x0000000000000000" in
   for i = 1 to 16 do
@@ -200,3 +222,41 @@ let print_program fmt p =
   Format.fprintf fmt "(lambda (%a) %a)"
     print_var p.input
     print_expr p.expr
+
+
+let rec simplify_expr expr =
+  match expr_map_child simplify_expr expr with
+  | Unop (op, Const c) ->
+      Const (apply_unop op c)
+  | Binop (op, Const c1, Const c2) ->
+      Const (apply_binop op c1 c2)
+  | (Binop (And, Const c, e) | Binop (And, e, Const c)) when c = Int64.zero ->
+      Binop (And, Const c, e)
+  | (Binop (Or, Const c, e) | Binop (Or, e, Const c))  when c = Int64.zero ->
+      e
+  | (Binop (Plus, Const c, e) | Binop (Plus, e, Const c)) when c = Int64.zero ->
+      e
+  | Binop (Xor, Var x1, Var x2) when x1 == x2 ->
+      Const (Int64.zero)
+  | Binop (op, Binop (op', e1, e2), e3) when op = op' ->
+      begin match e1, e2, e3 with
+      | Const c1, Const c2, e
+      | Const c1, e, Const c2
+      | e, Const c1, Const c2 ->
+          Binop (op, Const (apply_binop op c1 c2), e)
+      | Const c, e1, e2
+      | e1, Const c, e2
+      | e1, e2, Const c ->
+          Binop (op, Const c, Binop(op, e1, e2))
+      | _ ->
+          Binop (op, e1, Binop(op, e2, e3))
+      end
+  | If_Zero (Const c, e1, e2) when c = Int64.zero ->
+      e1
+  | Const _
+  | Var _
+  | Unop (_, _)
+  | Binop (_, _, _)
+  | If_Zero (_, _, _)
+  | Fold (_, _, _, _, _) ->
+      expr
