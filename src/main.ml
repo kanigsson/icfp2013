@@ -1,6 +1,8 @@
 open Ast
 open Programs
 
+let force_size = ref None
+
 let print_64_array x =
   Format.printf "[|";
   for i = 0 to Array.length x - 1 do
@@ -20,7 +22,10 @@ let run_guesser problem =
       problem.pb_binop
       problem.pb_fold_kind
       problem.pb_with_if
-      problem.pb_size in
+      (match !force_size with
+      | None -> problem.pb_size
+      | Some s -> s)
+  in
   let input = Arguments.int_64_arguments in
   let out = Webapi.eval problem.pb_id input in
   Format.printf "Inputs (%d):@[" (Array.length input);
@@ -60,7 +65,7 @@ let first_problem =
 
 
 
-let size, pb, args =
+let pb, args =
   let seed = ref (-1) in
   let size = ref 15 in
   let rev_args = ref [] in
@@ -70,7 +75,7 @@ let size, pb, args =
     ["-seed", Arg.Set_int seed,
      "Set the seed of the random generator" ;
      "-size", Arg.Set_int size,
-     "Set the size of the generated programs for the benchs" ;
+     "Force the size of the generated programs" ;
      "-pb", Arg.Set_string pb,
      "Parse and solve the problem given in argument";
      "-train", Arg.Set_int train,
@@ -84,7 +89,10 @@ let size, pb, args =
   let () =
     if !train > 0 then (Webapi.train !train; exit 0)
   in
-  !size, !pb, List.rev !rev_args
+  let () =
+    if !size > 0 then force_size := Some !size
+  in
+  !pb, List.rev !rev_args
 
 let _ =
   if pb <> "" then
