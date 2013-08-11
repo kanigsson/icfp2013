@@ -48,18 +48,18 @@ let run_guesser problem =
     Format.printf "guessed problem@.";
     match gr with
     | Json.Guess_win ->
-        Format.printf "guessed program %s: %a@." problem.pb_id print_program p
+        Format.printf "Win program %s: %a@." problem.pb_id print_program p
     | Json.Guess_mismatch (in_,out_corr, old_) ->
         Format.printf "incorrect for %s,%s,%s@."
           (int64_to_hex_string in_) (int64_to_hex_string out_corr)
           (int64_to_hex_string old_);
         run (Array.append input [|in_|]) (Array.append output [|out_corr|])
     | Json.Guess_error s ->
-        Format.printf "guess error: %s" s;
+        Format.printf "guess error: %s@." s;
         assert false
     end
     with Webapi.Error (code, msg) ->
-      Format.eprintf "Warning %d: %s" code msg;
+      Format.eprintf "Warning %d: %s@." code msg;
       run input output
   in
   run input out
