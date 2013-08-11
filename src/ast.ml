@@ -92,4 +92,5 @@ let print_problem fmt p =
   Format.fprintf fmt "]@\n";
   Format.fprintf fmt "fold_kind = %s;@\n" (string_of_fold_kind p.pb_fold_kind);
   Format.fprintf fmt "with_if = %s;@\n" (string_of_bool p.pb_with_if);
+  Format.fprintf fmt "@] }@\n";
   ()

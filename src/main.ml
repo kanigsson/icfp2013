@@ -1,24 +1,7 @@
 open Ast
 open Programs
 
-let size, args =
-  let seed = ref (-1) in
-  let size = ref 15 in
-  let rev_args = ref [] in
-  Arg.parse
-    ["-seed", Arg.Set_int seed,
-     "Set the seed of the random generator" ;
-     "-size", Arg.Set_int size,
-     "Set the size of the generated programs for the benchs" ; ]
-    (fun x -> rev_args := x :: !rev_args)
-    "options:";
-  let () =
-    if !seed = -1 then Random.self_init ()
-    else Random.init !seed
-  in
-  !size, List.rev !rev_args
-
-let print_64_array x = 
+let print_64_array x =
   Format.printf "[|";
   for i = 0 to Array.length x - 1 do
     Format.printf "%s;" (Programs.int64_to_hex_string x.(i))
@@ -31,7 +14,7 @@ let rec find_program input output gen =
   else find_program input output gen
 
 let run_guesser problem =
-  let gen = 
+  let gen =
     Program_generator.make
       problem.pb_unop
       problem.pb_binop
@@ -70,7 +53,35 @@ let first_problem =
     pb_with_if = false
   }
 
-let _ = run_guesser first_problem
+
+
+let size, pb, args =
+  let seed = ref (-1) in
+  let size = ref 15 in
+  let rev_args = ref [] in
+  let pb = ref "" in
+  Arg.parse
+    ["-seed", Arg.Set_int seed,
+     "Set the seed of the random generator" ;
+     "-size", Arg.Set_int size,
+     "Set the size of the generated programs for the benchs" ;
+     "-pb", Arg.Set_string pb,
+     "Parse and solve the problem given in argument"]
+    (fun x -> rev_args := x :: !rev_args)
+    "options:";
+  let () =
+    if !seed = -1 then Random.self_init ()
+    else Random.init !seed
+  in
+  !size, !pb, List.rev !rev_args
+
+let _ =
+  if pb <> "" then
+    let problem = Json.problem_of_string pb in
+    Format.printf "Problem : @[%a@]@."
+      print_problem problem;
+    run_guesser problem;
+    ()
 
 (*
 
