@@ -133,8 +133,7 @@ let handle_server_error x =
   match x with
   | OK s -> s
   | Error s ->
-      Format.printf "server error: %s" s;
-      assert false
+      error "server error" s
 
 let eval prog_id input =
   let x =
