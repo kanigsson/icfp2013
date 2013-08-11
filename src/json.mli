@@ -14,3 +14,5 @@ type guess_response =
 val guess_response_of_string : string -> guess_response
 
 val problem_of_string : string -> problem
+
+val my_problems_of_file : string -> problem list

@@ -65,21 +65,27 @@ let first_problem =
 
 
 
-let pb, args =
+let problem, args =
   let seed = ref (-1) in
   let size = ref 15 in
   let rev_args = ref [] in
   let pb = ref "" in
   let train = ref (-1) in
+  let my_problems_file = ref "" in
+  let pb_id = ref "" in
   Arg.parse
-    ["-seed", Arg.Set_int seed,
+    ["-pb", Arg.Set_string pb,
+     "Parse and solve the problem given in argument";
+     "-myproblems", Arg.Set_string my_problems_file,
+     "Load the problem file";
+     "-pb_id", Arg.Set_string pb_id,
+     "Solve the problem given in argument from myproblems";
+     "-train", Arg.Set_int train,
+     "Ask a new test";
+     "-seed", Arg.Set_int seed,
      "Set the seed of the random generator" ;
      "-size", Arg.Set_int size,
-     "Force the size of the generated programs" ;
-     "-pb", Arg.Set_string pb,
-     "Parse and solve the problem given in argument";
-     "-train", Arg.Set_int train,
-     "Ask a new test"; ]
+     "Force the size of the generated programs" ;]
     (fun x -> rev_args := x :: !rev_args)
     "options:";
   let () =
@@ -92,15 +98,32 @@ let pb, args =
   let () =
     if !size > 0 then force_size := Some !size
   in
-  !pb, List.rev !rev_args
+  let my_problems =
+    if !my_problems_file = "" then []
+    else Json.my_problems_of_file !my_problems_file
+  in
+  let pb =
+    if !pb <> "" then
+      Json.problem_of_string !pb
+    else if !pb_id <> "" then
+      begin try
+        let id = !pb_id in
+        List.find (fun p -> p.pb_id = id) my_problems
+      with Not_found ->
+        Format.eprintf "Problem %s not found@." !pb_id;
+        exit 1
+      end
+    else begin
+      Format.eprintf "Nothinng to do@.";
+      exit 0
+    end
+  in
+  pb, List.rev !rev_args
 
 let _ =
-  if pb <> "" then
-    let problem = Json.problem_of_string pb in
-    Format.printf "Problem : @[%a@]@."
-      print_problem problem;
-    run_guesser problem;
-    ()
+  Format.printf "Problem : @[%a@]@." print_problem problem;
+  run_guesser problem;
+  ()
 
 (*
 

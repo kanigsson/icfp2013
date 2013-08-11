@@ -131,8 +131,8 @@ let binop_of_list l =
   Array.of_list ops
 
 
-let problem_of_string x =
-  match from_string x with
+let problem_of_json x =
+  match x with
   | `Assoc l ->
       let id =
         begin match find_assoc "id" l with
@@ -168,11 +168,12 @@ let problem_of_string x =
         pb_binop = binop_of_list operators; }
   | x -> error x
 
+let problem_of_string x =
+  problem_of_json (from_string x)
 
-
-
-(* let my_problems s = *)
-(*   match from_string s with *)
-(*   | `List l -> *)
-(*       List.map parse_problem l *)
-(*   | _ -> assert false *)
+let my_problems_of_file f =
+  let c = open_in f in
+  match from_channel c with
+  | `List l ->
+      List.map problem_of_json l
+  | x -> error x
