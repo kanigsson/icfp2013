@@ -46,7 +46,7 @@ type guess_response =
   | Guess_mismatch of int64 * int64 * int64
   | Guess_error of string
 
-let guess_response s =
+let guess_response_of_string s =
   match from_string s with
   | `Assoc l ->
       begin match find_assoc "status" l with
