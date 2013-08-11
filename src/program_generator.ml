@@ -15,7 +15,7 @@ let rec correction_fold input inside expr =
 let make unops binops fold_kind with_if size =
   let with_if, unops, binops, size =
     if with_if then
-      let with_if = false in
+      (* let with_if = false in *)
       let unops =
         [| Not;
            Shl1;
@@ -48,8 +48,13 @@ let make unops binops fold_kind with_if size =
   let acc = gen_id "acc" in
   let vars =
     match fold_kind with
-    | No_fold -> [| Var input |]
-    | Top_fold | Inner_fold -> [| Var input; Var v ; Var acc; |]
+    | No_fold ->
+        [| Var input; Var input; Var input; Var input; |]
+    | Top_fold | Inner_fold ->
+        [| Var input; Var v ; Var acc;
+           Var input; Var v ; Var acc;
+           Var input; Var v ; Var acc;
+           Var input; Var v ; Var acc; |]
   in
   let values =
     Array.append
