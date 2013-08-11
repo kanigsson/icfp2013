@@ -174,11 +174,13 @@ let single_hex_num c =
   | 15 -> 'F'
   | _ -> assert false
 
+let int64_15 = Int64.of_int 15
+
 let int64_to_hex_string x =
   let s = String.copy "0x0000000000000000" in
   for i = 1 to 16 do
     s.[i+1] <-
-      single_hex_num (Int64.shift_right x (4*(16-i)))
+      single_hex_num (Int64.logand int64_15 (Int64.shift_right x (4*(16-i))))
   done;
   s
 
