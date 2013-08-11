@@ -1,6 +1,6 @@
 open Ast
 
-exception Error of string
+exception Error of int * string
 
 type problem_id = string
 

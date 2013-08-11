@@ -56,14 +56,15 @@ let response_regexp =
   { regexp = Str.regexp "^HTTP/1.[01][ \t]+\\([0-9]+\\)[ \t]+\\(.*[^\r]\\)\r";
     fields = [ 1, None; 2, None; ] }
 
-exception Error of string
 
-let error err mes = raise (Error (err ^ ": " ^ mes))
+exception Error of int * string
+
+let error err code mes = raise (Error (code, err ^ ": " ^ mes))
 
 let parse_response line =
   match regexp_match response_regexp line with
   | Some (code :: msg :: _) -> (int_of_string code, msg)
-  | _ -> error line "Ill formed response"
+  | _ -> error line  (-1) "Ill formed response"
 
 let rec remove_headers in_ch =
   match input_line in_ch with
@@ -72,12 +73,12 @@ let rec remove_headers in_ch =
 
 type result =
   | OK of string
-  | Error of string
+  | Error of int * string
 
 let debug_print_result r =
   match r with
   | OK s -> Format.printf "%s@." s
-  | Error s -> Format.printf "Error %s@." s
+  | Error (n, s) -> Format.printf "Error %d: %s@." n s
 
 let connect request f =
   let addr = make_addr base_url 80 in
@@ -112,8 +113,8 @@ let connect request f =
               ignore (input_line in_ch)
             done with End_of_file -> () end;
             OK dict
-        | _, s -> Error s
-      with End_of_file -> Error "unexpected end of stream"
+        | n, s -> Error (n, s)
+      with End_of_file -> Error (-1, "unexpected end of stream")
     in
     close sock;
     s
@@ -132,8 +133,8 @@ let print_as_json_dict b ar =
 let handle_server_error x =
   match x with
   | OK s -> s
-  | Error s ->
-      error "server error" s
+  | Error (n, s) ->
+      error "server error" n s
 
 let eval prog_id input =
   let x =

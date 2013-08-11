@@ -16,6 +16,7 @@ let rec find_program input output gen =
   else find_program input output gen
 
 let run_guesser problem =
+  Format.printf "Problem: @[%a@]@." print_problem problem;
   let gen =
     Program_generator.make
       problem.pb_unop
@@ -43,7 +44,7 @@ let run_guesser problem =
     Format.printf "guessed problem@.";
     match gr with
     | Json.Guess_win ->
-        Format.printf "guessed program %s@." problem.pb_id
+        Format.printf "guessed program %s: %a@." problem.pb_id print_program p
     | Json.Guess_mismatch (in_,out_corr, old_) ->
         Format.printf "incorrect for %s,%s,%s@."
           (int64_to_hex_string in_) (int64_to_hex_string out_corr)
@@ -53,9 +54,31 @@ let run_guesser problem =
         Format.printf "guess error: %s" s;
         assert false
     end
-    with _ -> run input output
+    with Webapi.Error (code, msg) ->
+      Format.eprintf "Warning %d: %s" code msg;
+      run input output
   in
   run input out
+
+let rec run_guesser_list l =
+  match l with
+  | [] ->
+      Format.printf "End!@.";
+  | pb :: l ->
+      let continue =
+        try run_guesser pb; true
+        with Webapi.Error (code, msg) ->
+          Format.eprintf "Error %a: %s (%d)@."
+            print_problem pb
+            msg
+            code;
+          begin match code with
+          | 410 -> true
+          | _ -> exit 1
+          end
+      in
+      if continue then run_guesser_list l
+      else run_guesser_list (pb :: l)
 
 let first_problem =
   { pb_id = "2DjZA7zt9wyrobpCB2bA0X8x";
@@ -68,14 +91,16 @@ let first_problem =
 
 
 
-let problem, args =
+let problems, args =
   let seed = ref (-1) in
-  let size = ref 15 in
+  let size = ref (-1) in
   let rev_args = ref [] in
   let pb = ref "" in
   let train = ref (-1) in
   let my_problems_file = ref "" in
   let pb_id = ref "" in
+  let all = ref (-1) in
+  let problems = ref [] in
   Arg.parse
     ["-pb", Arg.Set_string pb,
      "Parse and solve the problem given in argument";
@@ -83,6 +108,8 @@ let problem, args =
      "Load the problem file";
      "-pb_id", Arg.Set_string pb_id,
      "Solve the problem given in argument from myproblems";
+     "-all", Arg.Set_int all,
+     "Solve all the problem given in myproblems with size less or equal to the argument";
      "-train", Arg.Set_int train,
      "Ask a new test";
      "-seed", Arg.Set_int seed,
@@ -105,27 +132,30 @@ let problem, args =
     if !my_problems_file = "" then []
     else Json.my_problems_of_file !my_problems_file
   in
-  let pb =
+  let () =
     if !pb <> "" then
-      Json.problem_of_string !pb
-    else if !pb_id <> "" then
+      problems := Json.problem_of_string !pb :: !problems
+  in
+  let () =
+    if !pb_id <> "" then
       begin try
         let id = !pb_id in
-        List.find (fun p -> p.pb_id = id) my_problems
+        let p = List.find (fun p -> p.pb_id = id) my_problems in
+        problems := p :: !problems
       with Not_found ->
         Format.eprintf "Problem %s not found@." !pb_id;
         exit 1
       end
-    else begin
-      Format.eprintf "Nothinng to do@.";
-      exit 0
-    end
   in
-  pb, List.rev !rev_args
+  let () =
+    if !all > 0 then
+      let l = List.filter (fun p -> p.pb_size <= !all) my_problems in
+      problems := !problems @ l
+  in
+  !problems, List.rev !rev_args
 
 let _ =
-  Format.printf "Problem : @[%a@]@." print_problem problem;
-  run_guesser problem;
+  run_guesser_list problems;
   ()
 
 (*
