@@ -66,10 +66,10 @@ let int_arguments =
   "0b1000000000000000000000000000000000000000000000000000000000000000";
   |]
 
-let x = Array.init 91 (fun _ -> Random.int64 Int64.max_int)
-let y = Array.init 100 (fun _ -> Int64.neg (Random.int64 Int64.max_int))
 
-let int_64_arguments =
+let int_64_arguments () =
+  let x = Array.init 91 (fun _ -> Random.int64 Int64.max_int) in
+  let y = Array.init 100 (fun _ -> Int64.neg (Random.int64 Int64.max_int)) in
   Array.concat
     [ (Array.map Int64.of_string int_arguments);
       x;

@@ -26,7 +26,7 @@ let run_guesser problem =
       | None -> problem.pb_size
       | Some s -> s)
   in
-  let input = Arguments.int_64_arguments in
+  let input = Arguments.int_64_arguments () in
   let out = Webapi.eval problem.pb_id input in
   Format.printf "Inputs (%d):@[" (Array.length input);
   print_64_array input;
@@ -35,6 +35,7 @@ let run_guesser problem =
   print_64_array out;
   Format.printf "@]@.";
   let rec run input output =
+    try begin
     Format.printf "obtained eval@.";
     let p = find_program input output gen in
     Format.printf "found program: @[%a@]@." print_program p;
@@ -51,6 +52,8 @@ let run_guesser problem =
     | Json.Guess_error s ->
         Format.printf "guess error: %s" s;
         assert false
+    end
+    with _ -> run input output
   in
   run input out
 
