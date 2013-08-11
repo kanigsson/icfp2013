@@ -2,6 +2,7 @@ open Ast
 open Programs
 
 let sleep n =
+  Format.printf "Waiting(%f)...@." n;
   ignore (Unix.select [] [] [] n)
 
 let force_size = ref None
@@ -84,7 +85,7 @@ let rec run_guesser_list l =
               end
           in
           if continue then
-            (sleep 10.; run_guesser_list l)
+            (sleep 7.5; run_guesser_list l)
           else run_guesser_list (pb :: l)
       | Some b ->
           Format.printf "Problem already solved (%s): %a@."
