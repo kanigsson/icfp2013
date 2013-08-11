@@ -13,6 +13,10 @@ let rec correction_fold input inside expr =
   | e -> Programs.expr_map_child (correction_fold input inside) e
 
 let make unops binops fold_kind with_if size =
+  let unops, size =
+    if unops = [||] then ([| Not |], size + 2)
+    else (unops, size)
+  in
   let with_fold_kind = ref fold_kind in
 
   let nb_unops = Array.length unops in
