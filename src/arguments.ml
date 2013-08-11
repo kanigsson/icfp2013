@@ -65,6 +65,8 @@ let int_arguments =
   "0b0100000000000000000000000000000000000000000000000000000000000000";
   "0b1000000000000000000000000000000000000000000000000000000000000000";
   |]
+
+let x = Array.init 192 (fun _ -> Random.int64 Int64.max_int) 
     
 let int_64_arguments = 
-  Array.map Int64.of_string int_arguments
+  Array.append (Array.map Int64.of_string int_arguments) x

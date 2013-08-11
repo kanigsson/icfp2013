@@ -30,7 +30,7 @@ let test_parse_and_eval () =
 
 
 let _ =
-  Webapi.train 10
+  Webapi.eval "vU4PfjL9rb6g4T2uEAUMVDWt" Arguments.int_64_arguments
 
 (*
 let x = ref 0
