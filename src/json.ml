@@ -1,5 +1,9 @@
 open Yojson.Safe
 
+let error x =
+  Format.eprintf "%s@." (pretty_to_string x);
+  assert false
+
 let find_assoc x l =
   try List.assoc x l
   with Not_found ->
@@ -7,7 +11,7 @@ let find_assoc x l =
     assert false
 
 type eval_response =
-  | Eval_ok of string * int64 * int64
+  | Eval_ok of int64 array
   | Eval_error of string
 
 let eval_response_of_string s =
@@ -16,14 +20,24 @@ let eval_response_of_string s =
       begin match find_assoc "status" l with
       | `String "ok" ->
           begin match find_assoc "outputs" l with
-          | `List [ `String id; `String output; `String input; ]
-          | `List [ `String id; `Intlit output; `Intlit input; ] ->
-              Eval_ok (id, Int64.of_string output, Int64.of_string input)
-          | x ->
-              Format.eprintf "%s@." (pretty_to_string x);
-              assert false
+          | `List l ->
+              let l =
+                List.map
+                  (fun x ->
+                    match x with
+                    | `String v | `Intlit v -> Int64.of_string v
+                    | `Int v -> Int64.of_int v
+                    | _ -> error x)
+                  l
+              in
+              Eval_ok (Array.of_list l)
+          | x -> error x
           end
-      | `String "error" -> (* XXX TODO XXX *) assert false
-      | _ -> assert false
+      | `String "error" ->
+          begin match find_assoc "message" l with
+          | `String msg -> Eval_error msg
+          | x -> Eval_error (pretty_to_string x)
+          end
+      | x -> error x
       end
-  | _ -> assert false
+  | x -> error x

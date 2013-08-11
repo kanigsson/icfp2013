@@ -67,4 +67,4 @@ let _ =
 *)
 
 
-let _ = Json.eval_response_of_string "{ \"status\":\"ok\",\"outputs\":[\"YOLCg1BdhPGmrXVwwxnoFQ7b\",\"0x0000000000000001\",\"0x0000000000000002\"]}"
+let _ = Json.eval_response_of_string "{ \"status\":\"ok\",\"outputs\":[\"0x0000000000000001\",\"0x0000000000000002\"]}"
