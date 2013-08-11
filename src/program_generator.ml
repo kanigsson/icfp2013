@@ -13,6 +13,26 @@ let rec correction_fold input inside expr =
   | e -> Programs.expr_map_child (correction_fold input inside) e
 
 let make unops binops fold_kind with_if size =
+  let with_if, unops, binops, size =
+    if with_if then
+      let with_if = false in
+      let unops =
+        [| Not;
+           Shl1;
+           Shr1;
+           Shr4;
+           Shr16; |]
+      in
+      let binops =
+        [| And;
+           Or;
+           Xor;
+           Plus; |]
+      in
+      (with_if, unops, binops, size * 2)
+    else
+      (with_if, unops, binops, size)
+ in
   let unops, size =
     if unops = [||] then ([| Not |], size + 2)
     else (unops, size)
@@ -84,8 +104,8 @@ let make unops binops fold_kind with_if size =
           random_unop 4
         else if nb_binops > 0 && Random.int 100 < 50 then
           random_binop 4
-        else if with_if && Random.int 100 < 50 then
-          random_if 4
+        (* else if with_if && Random.int 100 < 50 then *)
+        (*   random_if 4 *)
         else random_expr size
     | n ->
         if !with_fold_kind = Inner_fold && Random.int 100 < 25 then
@@ -94,8 +114,8 @@ let make unops binops fold_kind with_if size =
           random_unop n
         else if nb_binops > 0 && Random.int 100 < 50 then
           random_binop n
-        else if with_if && Random.int 100 < 50 then
-          random_if n
+        (* else if with_if && Random.int 100 < 50 then *)
+        (*   random_if n *)
         else random_expr size
 
 
@@ -134,7 +154,7 @@ let make unops binops fold_kind with_if size =
     let e = random_expr (size - 4) in
     Fold (e0, e1, acc, v, e)
 
-  and random_if size =
+  and _random_if size =
     let size = size - 1 in
     let size_cond = Random.int (size / 3) + 1 in
     let size_left = Random.int ((size - size_cond) / 2) + 1 in
