@@ -51,10 +51,10 @@ let run_guesser problem =
     | Json.Guess_win ->
         Format.printf "guessed program %s@." problem.pb_id
     | Json.Guess_mismatch (in_,out_corr, old_) ->
-        Format.printf "incorrect for %s,%s,%s@." 
+        Format.printf "incorrect for %s,%s,%s@."
           (int64_to_hex_string in_) (int64_to_hex_string out_corr)
           (int64_to_hex_string old_);
-        run (Array.append input [|in_|]) (Array.append input [|out_corr|])
+        run (Array.append input [|in_|]) (Array.append output [|out_corr|])
     | Json.Guess_error s ->
         Format.printf "guess error: %s" s;
         assert false
