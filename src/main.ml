@@ -31,7 +31,7 @@ let run_guesser problem =
   Format.printf "@]@.";
   let rec run input output =
     Format.printf "obtained eval@.";
-    let p = find_program input out gen in
+    let p = find_program input output gen in
     Format.printf "found program: @[%a@]@." print_program p;
     let gr = Webapi.guess problem.pb_id p in
     Format.printf "guessed problem@.";
