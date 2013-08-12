@@ -216,9 +216,9 @@ let problems, args =
       let l =
         List.filter
           (fun p ->
-            p.pb_size <= !all (* && *)
+            p.pb_size <= !all &&
             (* not p.pb_with_if && *)
-            (* (p.pb_fold_kind = No_fold || p.pb_fold_kind = Top_fold) && *)
+            (p.pb_fold_kind = No_fold || p.pb_fold_kind = Top_fold) (* && *)
             (* (has_and p.pb_binop) *)
             (* (if p.pb_fold_kind <> No_fold then has_bool_op p.pb_binop *)
             (*  else true) *)
